@@ -36,54 +36,54 @@ end
 
 %%
 close all;
-images = dir('P:\Shared\ImagesFromVikas\samples/*.png');
-path = strcat('P:\Shared\ImagesFromVikas\samples/', images(10).name)
+clear all;
+%addpath()
+images = dir('./to_matlab/*.png');
+path = strcat('./to_matlab/', images(79).name)
 %path = strcat('../PNG_Images_AC/', 'R21_T1_S6.png')
 %path = strcat('../PNG_Images_AC/', 'A10_T1_S103.png')
 %path = strcat('../PNG_Images_AC/', 'A12_T1_S109.png')
 %path = strcat('../PNG_Images_AC/', 'R3_T1_S28.png')
 %path = strcat('../PNG_Images_AC/', 'T1_T1_S2.png')
 
+image = uint16(imread(path));
+image = rgb2gray(image);
 
-image = double(imread(path));
+figure(1);
+imshow(image, [0 255]);
+
 [height,width] = size(image);
-image1 = imresize(image,[256 256]);
-[height1,width1] = size(image1);
-c = centerOfMass(image1);
+%image1 = imresize(image,[256 256]);
+%[height1,width1] = size(image1);
+c = centerOfMass(image);
 centerX = round(c(2));
 centerY = round(c(1));
 
-mask = double(zeros(height1, width1));
+mask = uint16(zeros(height, width));
 
 %newmask = double(ones(width));
-if height1 < 130 && width1 < 130 && height1 ~= width1
+if height < 130 && width < 130 && height ~= width
     maskSizeX = 50;
     maskSizeY = 40;
 else
-    maskSizeX = round(width1/5);
-    maskSizeY = round(height1/7);
+    maskSizeX = round(width/5);
+    maskSizeY = round(height/7);
 end
 mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
 %[hej,hej1] = size(mask)
 
-masked = image1 .* mask;
+masked = image .* mask;
 masked = masked(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
 
-figure(3);
+figure(2);
 imshow(image,[0 255]);
 hold on;
 plot(centerX,centerY,'r.');
 
-figure(4);
+figure(3);
 imshow(masked, [0 255]);
 hold on;
 plot(centerX,centerY,'r.');
-
-figure(5);
-imshow(image1, [0 255]);
-hold on;
-plot(centerX,centerY,'r.');
-
 %%
 %%%%%%%%%%%%%% Clean out ROI and classified folders %%%%%%%%%%%%
 

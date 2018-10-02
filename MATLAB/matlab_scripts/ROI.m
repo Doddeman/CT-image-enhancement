@@ -33,6 +33,6 @@ for i=1:length(images)
     masked = image .* mask;
     masked = masked(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX); % CUT OUT THE MASK SIZE OUT OF THE NEW IMAGE
     
-    newname = strcat('ROI_', name);
-    imwrite(masked, newname);
+    %newname = strcat('ROI_', name);
+    %imwrite(masked, newname);
 end

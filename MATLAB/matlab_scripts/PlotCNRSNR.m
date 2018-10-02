@@ -1,20 +1,35 @@
 clear all
-close all
+%close all
 
-images = dir('../samples/*.png');
+images = dir('E:\david\development\MATLAB\to_matlab/*.png');
+fields = fieldnames(images);
+cells = struct2cell(images);
+sz = size(cells);
+cells = reshape(cells, sz(1), []);
+cells = cells';
+% Sort by field "date"
+cells = sortrows(cells, 3);
+cells = reshape(cells', sz);
+images = cell2struct(cells, fields, 1);
 
-%snr1 = snr(masked,masked);
-%snrdb = mag2db(snr);
-%snrdb = 10*log10(snr);
+path = strcat('E:\david\development\MATLAB\to_matlab/', images(1).name);
+image = imread(path);
+image = im2double(image);
+image = rgb2gray(image);
+figure(58)
+%imshow(image), [0 255];
+imshow(image);
+%%
 
 SNRvector = [];
-SNRDBvector = [];
 CNRvector = [];
-for i = 1:length(images)
+%for i = 1:length(images)
+for i = 1:2
     i
     name = images(i).name;
-    path = strcat('../samples/', name);
-    image = double(imread(path));
+    path = strcat('E:\david\development\MATLAB\to_matlab/', name);
+    image = im2double(imread(path));
+    image = rgb2gray(image);
     [height,width] = size(image);
     c = centerOfMass(image);
     centerX = round(c(2));
@@ -44,14 +59,35 @@ for i = 1:length(images)
     meanBackground = mean(mean(image(background)));
 
     snr = meanROI/sdBackground;
-    snrdb = mag2db(snr);
-    %cnr = meanROI-meanBackground;
-    cnr = meanROI-sdBackground;
+    cnr = meanROI-meanBackground;
+    %cnr = meanROI-sdBackground;
 
     SNRvector = [SNRvector; snr];
-    SNRDBvector = [SNRDBvector; snrdb];
     CNRvector = [CNRvector; cnr]; 
 end
+
+
+
+figure(58)
+imshow(image[background]);
+
+figure(59)
+plot(SNRvector);
+title('SNR')
+xlabel('Samples')
+ylabel('SNR')
+
+figure(69)
+plot(CNRvector);
+title('CNR')
+xlabel('Samples')
+ylabel('CNR')
+
+
+SNRmean = mean(SNRvector);
+CNRmean = mean(CNRvector);
+
+
 %%
 
 fitmodel = fit(SNRvector, CNRvector,'poly1')
