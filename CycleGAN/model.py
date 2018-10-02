@@ -139,8 +139,8 @@ class cyclegan(object):
                 print(" [!] Load failed...")
 
         for epoch in range(args.epoch):
-            dataA = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/trainA'))
-            dataB = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/trainB'))
+            dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
+            dataB = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainB'))
             np.random.shuffle(dataA)
             np.random.shuffle(dataB)
             batch_idxs = min(min(len(dataA), len(dataB)), args.train_size) // self.batch_size
@@ -149,7 +149,19 @@ class cyclegan(object):
             for idx in range(0, batch_idxs):
                 batch_files = list(zip(dataA[idx * self.batch_size:(idx + 1) * self.batch_size],
                                        dataB[idx * self.batch_size:(idx + 1) * self.batch_size]))
-                batch_images = [load_train_data(batch_file, args.load_size, args.fine_size) for batch_file in batch_files]
+
+                '''# added check for thumbs.db in A and B
+                batch_images = []
+                for batch_file in batch_files:
+                     if batch_file[0][-4:] == ".png" and batch_file[1][-4:] == ".png":
+                         AB_image = load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc)
+                         batch_images.append(AB_image)
+                     else:
+                         print("One of these is not a png:", batch_file[0], batch_file[1])
+                         input("PRESS ENTER TO CONTINUE")'''
+
+                batch_images = [load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc) \
+                for batch_file in batch_files]
                 batch_images = np.array(batch_images).astype(np.float32)
 
                 # Update G network and record fake outputs
@@ -158,6 +170,14 @@ class cyclegan(object):
                     feed_dict={self.real_data: batch_images, self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
+
+                # Save images for cnr and snr calculations in matlab
+                if counter % 14 == 0:
+
+                    image_path = "E:\\david\development\\MATLAB\\to_matlab/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    #image_path = 'E:\\david\development\\MATLAB\\to_matlab/' + str(counter) + ".png"
+                    print("image_path:", image_path)
+                    save_images(fake_B, [1, 1], image_path)
 
                 # Update D network
                 _, summary_str = self.sess.run(
@@ -177,6 +197,8 @@ class cyclegan(object):
 
                 if np.mod(counter, args.save_freq) == 2:
                     self.save(args.checkpoint_dir, counter)
+
+        print("Training finished!")
 
     def save(self, checkpoint_dir, step):
         model_name = "cyclegan.model"
@@ -205,8 +227,8 @@ class cyclegan(object):
             return False
 
     def sample_model(self, sample_dir, epoch, idx):
-        dataA = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/testA'))
-        dataB = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/testB'))
+        dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
+        dataB = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testB'))
         np.random.shuffle(dataA)
         np.random.shuffle(dataB)
         batch_files = list(zip(dataA[:self.batch_size], dataB[:self.batch_size]))
@@ -218,18 +240,18 @@ class cyclegan(object):
             feed_dict={self.real_data: sample_images}
         )
         save_images(fake_A, [self.batch_size, 1],
-                    './{}/A_{:02d}_{:04d}.jpg'.format(sample_dir, epoch, idx))
+                    './{}/A_{:02d}_{:04d}.png'.format(sample_dir, epoch, idx))
         save_images(fake_B, [self.batch_size, 1],
-                    './{}/B_{:02d}_{:04d}.jpg'.format(sample_dir, epoch, idx))
+                    './{}/B_{:02d}_{:04d}.png'.format(sample_dir, epoch, idx))
 
     def test(self, args):
         """Test cyclegan"""
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         if args.which_direction == 'AtoB':
-            sample_files = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/testA'))
+            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
         elif args.which_direction == 'BtoA':
-            sample_files = glob('./datasets/{}/*.*'.format(self.dataset_dir + '/testB'))
+            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testB'))
         else:
             raise Exception('--which_direction must be AtoB or BtoA')
 
@@ -240,6 +262,7 @@ class cyclegan(object):
 
         # write html for visual comparison
         index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
+        print("path:", index_path)
         index = open(index_path, "w")
         index.write("<html><body><table><tr>")
         index.write("<th>name</th><th>input</th><th>output</th></tr>")
@@ -248,17 +271,18 @@ class cyclegan(object):
             self.testA, self.test_B)
 
         for sample_file in sample_files:
-            print('Processing image: ' + sample_file)
-            sample_image = [load_test_data(sample_file, args.fine_size)]
-            sample_image = np.array(sample_image).astype(np.float32)
-            image_path = os.path.join(args.test_dir,
-                                      '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
-            fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
-            save_images(fake_img, [1, 1], image_path)
-            index.write("<td>%s</td>" % os.path.basename(image_path))
-            index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
-                '..' + os.path.sep + sample_file)))
-            index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
-                '..' + os.path.sep + image_path)))
-            index.write("</tr>")
+            if sample_file[-4:] == ".png":
+                print('Processing image: ' + sample_file)
+                sample_image = [load_test_data(sample_file, args.fine_size)]
+                sample_image = np.array(sample_image).astype(np.float32)
+                image_path = os.path.join(args.test_dir,
+                                          '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
+                fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
+                save_images(fake_img, [1, 1], image_path)
+                index.write("<td>%s</td>" % os.path.basename(image_path))
+                index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
+                    '..' + os.path.sep + sample_file)))
+                index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
+                    '..' + os.path.sep + image_path)))
+                index.write("</tr>")
         index.close()

@@ -1,8 +1,8 @@
-__pycache__
 .idea/*
-logs/*
+__pycache__
 checkpoint/*
+checkpoint-test/*
 datasets/*
-test/*
+logs/*
 sample/*
-imgs/*
+test/*

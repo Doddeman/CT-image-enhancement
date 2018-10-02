@@ -42,15 +42,17 @@ class ImagePool(object):
         else:
             return image
 
-def load_test_data(image_path, fine_size=256):
+def load_test_data(image_path, fine_size=256, input_c_dim=1):
     img = imread(image_path)
     img = scipy.misc.imresize(img, [fine_size, fine_size])
+    img = img[:, :, :input_c_dim] #Changing to correct channel dim
     img = img/127.5 - 1
     return img
 
-def load_train_data(image_path, load_size=286, fine_size=256, is_testing=False):
+def load_train_data(image_path, load_size=286, fine_size=256, input_c_dim=1, output_c_dim=1, is_testing=False):
     img_A = imread(image_path[0])
     img_B = imread(image_path[1])
+
     if not is_testing:
         img_A = scipy.misc.imresize(img_A, [load_size, load_size])
         img_B = scipy.misc.imresize(img_B, [load_size, load_size])
@@ -58,6 +60,8 @@ def load_train_data(image_path, load_size=286, fine_size=256, is_testing=False):
         w1 = int(np.ceil(np.random.uniform(1e-2, load_size-fine_size)))
         img_A = img_A[h1:h1+fine_size, w1:w1+fine_size]
         img_B = img_B[h1:h1+fine_size, w1:w1+fine_size]
+        img_A = img_A[:, :, :input_c_dim] #Changing to correct channel dim
+        img_B = img_B[:, :, :output_c_dim] #Changing to correct channel dim
 
         if np.random.random() > 0.5:
             img_A = np.fliplr(img_A)
@@ -65,17 +69,24 @@ def load_train_data(image_path, load_size=286, fine_size=256, is_testing=False):
     else:
         img_A = scipy.misc.imresize(img_A, [fine_size, fine_size])
         img_B = scipy.misc.imresize(img_B, [fine_size, fine_size])
+        img_A = img_A[:, :, :input_c_dim] #Changing to correct channel dim
+        img_B = img_B[:, :, :output_c_dim] #Changing to correct channel dim
 
     img_A = img_A/127.5 - 1.
     img_B = img_B/127.5 - 1.
-
+    #print("A SHAPE:", img_A.shape)
+    #print("B SHAPE:", img_B.shape)
     img_AB = np.concatenate((img_A, img_B), axis=2)
+
+    #print("file names:", image_path)
+    #print("AB SHAPE:", img_AB.shape)
+
     # img_AB shape: (fine_size, fine_size, input_c_dim + output_c_dim)
     return img_AB
 
 # -----------------------------
 
-def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = False):
+def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = True):
     return transform(imread(image_path, is_grayscale), image_size, is_crop, resize_w)
 
 def save_images(images, size, image_path):
