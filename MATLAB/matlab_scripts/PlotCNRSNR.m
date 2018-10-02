@@ -1,7 +1,9 @@
 clear all
 %close all
 
-images = dir('E:\david\development\MATLAB\to_matlab/*.png');
+% Get images and sort after date modified
+%images = dir('E:\david\development\MATLAB\to_matlab/*.png');
+images = dir('../to_matlab/*.png');
 fields = fieldnames(images);
 cells = struct2cell(images);
 sz = size(cells);
@@ -12,67 +14,125 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 images = cell2struct(cells, fields, 1);
 
-path = strcat('E:\david\development\MATLAB\to_matlab/', images(1).name);
+
+
+path = strcat('..\to_matlab/', images(1).name);
 image = imread(path);
 image = im2double(image);
 image = rgb2gray(image);
-figure(58)
+
+[height,width] = size(image);
+c = centerOfMass(image);
+centerX = round(c(2));
+centerY = round(c(1));
+mask = double(zeros(height, width));
+maskSizeX = round(width/4);
+maskSizeY = round(height/4);
+mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
+maskedImage = image .* mask;
+maskedImage = maskedImage(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
+
+figure(1)
 %imshow(image), [0 255];
 imshow(image);
+hold on;
+plot(centerX,centerY,'r.');
+
+figure(2)
+imshow(maskedImage);
+title('masked image')
+
+copy = image;
+copy(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
+%sum = sum(copy(:) == 2)
+backgroundIndices = find(copy < 2);
+backgroundValues = image(backgroundIndices);
+
+figure(3)
+imshow(copy);
+
+meanROI = mean(mean(maskedImage));
+%sdROI = std(std(masked));
+sdBackground = std(backgroundValues);
+meanBackground = mean(backgroundValues);
+
+signal = meanROI;
+contrast = meanROI-meanBackground;
+noise = sdBackground;
+snr = signal/noise;
+c = contrast/noise;
+cnr = log10(c);
+cnr2 = 20*cnr;
+%cnr = meanROI-sdBackground;
+
+
 %%
+%clear all;
+%close all;
+
 
 SNRvector = [];
 CNRvector = [];
 %for i = 1:length(images)
-for i = 1:2
+for i = 1:105
     i
     name = images(i).name;
-    path = strcat('E:\david\development\MATLAB\to_matlab/', name);
+    path = strcat('../to_matlab/', name);
+    %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
+    %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     image = im2double(imread(path));
     image = rgb2gray(image);
     [height,width] = size(image);
     c = centerOfMass(image);
     centerX = round(c(2));
     centerY = round(c(1));
-
+   
     mask = double(zeros(height, width));
-    newmask = double(ones(height, width));
-    if height < 130 && width < 130 && height ~= width
-        maskSizeX = 50;
-        maskSizeY = 40;
-    else
-        maskSizeX = round(width/5);
-        maskSizeY = round(height/7);
-    end
+    maskSizeX = round(width/4);
+    maskSizeY = round(height/4);
+%     if height < 130 && width < 130 && height ~= width
+%         maskSizeX = 50;
+%         maskSizeY = 40;
+%     else
+%         maskSizeX = round(width/5);
+%         maskSizeY = round(height/7);
+%     end
     mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
-    masked = image .* mask;
-    masked = masked(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
+    maskedImage = image .* mask;
+    maskedImage = maskedImage(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
 
-    %newmask to cut out background
-    newmask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = inf;
-    newmasked = image .* newmask;
-    background = find(newmasked < inf);
+    %Values in image range from 0 to 1, so by assigning the values
+    %of ROI to 2, the background can be found
+    image(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
+    %twos = sum(image(:) == 2)
+    backgroundIndices = find(image < 2);
+    backgroundValues = image(backgroundIndices);
 
-    sdBackground = std(image(background));
-    meanROI = mean(mean(masked));
+    meanROI = mean(mean(maskedImage));
     %sdROI = std(std(masked));
-    meanBackground = mean(mean(image(background)));
+    sdBackground = std(backgroundValues);
+    meanBackground = mean(backgroundValues);
 
-    snr = meanROI/sdBackground;
-    cnr = meanROI-meanBackground;
+    signal = meanROI;
+    contrast = meanROI-meanBackground;
+    noise = sdBackground;
+    snr = signal/noise;
+    c = contrast/noise;
+    cnr = log10(c);
+    cnr = 20*cnr;
     %cnr = meanROI-sdBackground;
 
     SNRvector = [SNRvector; snr];
-    CNRvector = [CNRvector; cnr]; 
+    CNRvector = [CNRvector; contrast]; 
 end
 
-
+%%
 
 figure(58)
-imshow(image[background]);
+imshow(image);
 
 figure(59)
-plot(SNRvector);
+plot(SNRvector);                                      
 title('SNR')
 xlabel('Samples')
 ylabel('SNR')

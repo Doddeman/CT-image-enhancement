@@ -1,5 +1,12 @@
 %Useful commands
 
+clear all
+m = [1 2 3; 0 0 0; 1 2 3];
+backgroundIndices = find(m < 2);
+hej = mean(m);
+hej2=mean(hej);
+hej3=mean(hej);
+hej4=mean(hej);
 %[height, width, color] = size(image);
 %imshow(image);
 %[rowA, colA] = find(image > 200);
