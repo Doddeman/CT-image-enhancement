@@ -5,7 +5,6 @@ from glob import glob
 import tensorflow as tf
 import numpy as np
 from collections import namedtuple
-
 from module import *
 from utils import *
 
@@ -173,11 +172,13 @@ class cyclegan(object):
 
                 # Save images for cnr and snr calculations in matlab
                 if counter % 14 == 0:
-
-                    image_path = "E:\\david\development\\MATLAB\\to_matlab/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    original_path = "E:\\david\development\\MATLAB\\to_matlab\\fake/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    fake_path = "E:\\david\development\\MATLAB\\to_matlab\\fake/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
                     #image_path = 'E:\\david\development\\MATLAB\\to_matlab/' + str(counter) + ".png"
-                    print("image_path:", image_path)
-                    save_images(fake_B, [1, 1], image_path)
+                    print("original_path", original_path)
+                    print("fake_path:", fake_path)
+                    save_images(batch_images[0], [1, 1], original_path)
+                    save_images(fake_B, [1, 1], fake_path)
 
                 # Update D network
                 _, summary_str = self.sess.run(
@@ -191,6 +192,9 @@ class cyclegan(object):
                 counter += 1
                 print(("Epoch: [%2d] [%4d/%4d] time: %4.4f" % (
                     epoch, idx, batch_idxs, time.time() - start_time)))
+
+                print("discriminator loss?:", self.d_loss)
+                print("generator loss?:", self.g_loss)
 
                 if np.mod(counter, args.print_freq) == 1:
                     self.sample_model(args.sample_dir, epoch, idx)

@@ -28,6 +28,7 @@ def discriminator(image, options, reuse=False, name="discriminator"):
 
 def generator_unet(image, options, reuse=False, name="generator"):
 
+    #Change the HOLD_ON rate here for training
     dropout_rate = 0.5 if options.is_training else 1.0
     with tf.variable_scope(name):
         # image is 256 x 256 x input_c_dim
