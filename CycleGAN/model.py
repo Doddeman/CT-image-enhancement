@@ -149,19 +149,19 @@ class cyclegan(object):
                 batch_files = list(zip(dataA[idx * self.batch_size:(idx + 1) * self.batch_size],
                                        dataB[idx * self.batch_size:(idx + 1) * self.batch_size]))
 
-                '''# added check for thumbs.db in A and B
+                # added check for thumbs.db in A and B
                 batch_images = []
                 for batch_file in batch_files:
                      if batch_file[0][-4:] == ".png" and batch_file[1][-4:] == ".png":
-                         AB_image = load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc)
+                         original_A, AB_image = load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc)
                          batch_images.append(AB_image)
                      else:
                          print("One of these is not a png:", batch_file[0], batch_file[1])
-                         input("PRESS ENTER TO CONTINUE")'''
+                         input("PRESS ENTER TO CONTINUE")
 
-                batch_images = [load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc) \
-                for batch_file in batch_files]
-                batch_images = np.array(batch_images).astype(np.float32)
+                #original_A, batch_images = [load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc) \
+                #for batch_file in batch_files]
+                #batch_images = np.array(batch_images).astype(np.float32)
 
                 # Update G network and record fake outputs
                 fake_A, fake_B, _, summary_str = self.sess.run(
@@ -172,14 +172,16 @@ class cyclegan(object):
 
                 # Save images for cnr and snr calculations in matlab
                 if counter % 14 == 0:
-                    #path = "E:\\david\\development\\MATLAB\\to_matlab"
-                    path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                    original_path = path + "original/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    fake_path = path + "fake/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                    path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                    original_path = path + "originals/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    fake_path = path + "fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
                     #image_path = 'path' + str(counter) + ".png"
-                    print("original_path", original_path)
-                    print("fake_path:", fake_path)
-                    save_images(batch_images[0], [1, 1], original_path)
+                    #print("original_path", original_path)
+                    #print("fake_path:", fake_path)
+                    print("fake_B:",fake_B.shape)
+                    print("originalA:",original_A.shape)
+                    save_images(original_A, [1, 1], original_path)
                     save_images(fake_B, [1, 1], fake_path)
 
                 # Update D network
@@ -196,8 +198,8 @@ class cyclegan(object):
                     epoch, idx, batch_idxs, time.time() - start_time)))
 
                 #Try to print loss...
-                print("discriminator loss?:", self.d_loss)
-                print("generator loss?:", self.g_loss)
+                #print("discriminator loss?:", self.d_loss)
+                #print("generator loss?:", self.g_loss)
 
                 if np.mod(counter, args.print_freq) == 1:
                     self.sample_model(args.sample_dir, epoch, idx)
