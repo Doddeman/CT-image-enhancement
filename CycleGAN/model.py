@@ -172,9 +172,11 @@ class cyclegan(object):
 
                 # Save images for cnr and snr calculations in matlab
                 if counter % 14 == 0:
-                    original_path = "E:\\david\development\\MATLAB\\to_matlab\\fake/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    fake_path = "E:\\david\development\\MATLAB\\to_matlab\\fake/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    #image_path = 'E:\\david\development\\MATLAB\\to_matlab/' + str(counter) + ".png"
+                    #path = "E:\\david\\development\\MATLAB\\to_matlab"
+                    path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                    original_path = path + "original/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    fake_path = path + "fake/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    #image_path = 'path' + str(counter) + ".png"
                     print("original_path", original_path)
                     print("fake_path:", fake_path)
                     save_images(batch_images[0], [1, 1], original_path)
@@ -193,6 +195,7 @@ class cyclegan(object):
                 print(("Epoch: [%2d] [%4d/%4d] time: %4.4f" % (
                     epoch, idx, batch_idxs, time.time() - start_time)))
 
+                #Try to print loss...
                 print("discriminator loss?:", self.d_loss)
                 print("generator loss?:", self.g_loss)
 
