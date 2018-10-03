@@ -14,9 +14,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 images = cell2struct(cells, fields, 1);
 
-
-
-path = strcat('..\to_matlab/', images(1).name);
+path = strcat('..\to_matlab/', images(4000).name);
 image = imread(path);
 image = im2double(image);
 image = rgb2gray(image);
@@ -71,10 +69,12 @@ cnr2 = 20*cnr;
 %close all;
 
 
-SNRvector = [];
-CNRvector = [];
-%for i = 1:length(images)
-for i = 1:105
+% SNRvector = [];
+% CNRvector = [];
+SNRvector = zeros(length(images),1);
+CNRvector = zeros(length(images),1);
+for i = 1:length(images)
+%for i = 1:105
     i
     name = images(i).name;
     path = strcat('../to_matlab/', name);
@@ -122,8 +122,10 @@ for i = 1:105
     cnr = 20*cnr;
     %cnr = meanROI-sdBackground;
 
-    SNRvector = [SNRvector; snr];
-    CNRvector = [CNRvector; contrast]; 
+    %SNRvector = [SNRvector; snr];
+    %CNRvector = [CNRvector; contrast]; 
+    SNRvector(i) = snr;
+    CNRvector(i) = contrast;
 end
 
 %%
