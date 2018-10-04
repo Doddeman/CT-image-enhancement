@@ -82,7 +82,7 @@ def load_train_data(image_path, load_size=286, fine_size=256, input_c_dim=1, out
     #print("AB SHAPE:", img_AB.shape)
 
     # img_AB shape: (fine_size, fine_size, input_c_dim + output_c_dim)
-    return img_A, img_AB
+    return img_AB
 
 # -----------------------------
 

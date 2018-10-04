@@ -7,6 +7,7 @@ import numpy as np
 from collections import namedtuple
 from module import *
 from utils import *
+from shutil import copyfile
 
 
 class cyclegan(object):
@@ -149,19 +150,15 @@ class cyclegan(object):
                 batch_files = list(zip(dataA[idx * self.batch_size:(idx + 1) * self.batch_size],
                                        dataB[idx * self.batch_size:(idx + 1) * self.batch_size]))
 
-                # added check for thumbs.db in A and B
+                '''# added check for thumbs.db in A and B
                 batch_images = []
                 for batch_file in batch_files:
-                     if batch_file[0][-4:] == ".png" and batch_file[1][-4:] == ".png":
-                         original_A, AB_image = load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc)
-                         batch_images.append(AB_image)
-                     else:
-                         print("One of these is not a png:", batch_file[0], batch_file[1])
-                         input("PRESS ENTER TO CONTINUE")
+                     original_A, AB_image = load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc)
+                     batch_images.append(AB_image)'''
 
-                #original_A, batch_images = [load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc) \
-                #for batch_file in batch_files]
-                #batch_images = np.array(batch_images).astype(np.float32)
+                batch_images = [load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc) \
+                for batch_file in batch_files]
+                batch_images = np.array(batch_images).astype(np.float32)
 
                 # Update G network and record fake outputs
                 fake_A, fake_B, _, summary_str = self.sess.run(
@@ -171,18 +168,21 @@ class cyclegan(object):
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Save images for cnr and snr calculations in matlab
-                if counter % 14 == 0:
-                    #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                    path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                    original_path = path + "originals/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    fake_path = path + "fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    #image_path = 'path' + str(counter) + ".png"
-                    #print("original_path", original_path)
-                    #print("fake_path:", fake_path)
-                    print("fake_B:",fake_B.shape)
-                    print("originalA:",original_A.shape)
-                    save_images(original_A, [1, 1], original_path)
-                    save_images(fake_B, [1, 1], fake_path)
+                #if counter % 14 == 0:
+                #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                original_path = path + "originals/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                fake_path = path + "fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                #image_path = 'path' + str(counter) + ".png"
+                #print("original_path", original_path)
+                #print("fake_path:", fake_path)
+                print("file_name:", batch_files[0][0])
+                copyfile(batch_files[0][0], original_path)
+                #Does not work to save original this way
+                #print("originalA:",original_A.shape)
+                #save_images(original_A, [1, 1, 0], original_path)
+                #print("fake_B:",fake_B.shape)
+                save_images(fake_B, [1, 1], fake_path)
 
                 # Update D network
                 _, summary_str = self.sess.run(
