@@ -1,7 +1,10 @@
 %Useful commands
 
 clear all
-% % m = [1 2 3; 0 0 0; 1 2 3];
+m = [1 2 3; 0 0 0; 1 2 3];
+s = std(m);
+s = [2 4 4 4 5 5 7 9];
+sd = std(s, 1);
 % % backgroundIndices = find(m < 2);
 % % hej = mean(m);
 % % hej2=mean(hej);
@@ -12,11 +15,13 @@ clear all
 % end
 % 
 % b = 2
-images = dir('../to_matlab/*.png');
-n = length(images)
-z = zeros(n,1);
+% images = dir('../to_matlab/*.png');
+% n = length(images)
+% z = zeros(n,1);
+% 
+% z(6) = 40;
 
-z(6) = 40;
+
 
 %[height, width, color] = size(image);
 %imshow(image);
