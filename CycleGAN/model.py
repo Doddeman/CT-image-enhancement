@@ -168,21 +168,22 @@ class cyclegan(object):
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Save images for cnr and snr calculations in matlab
-                #if counter % 14 == 0:
-                #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                original_path = path + "originals/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                fake_path = path + "fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                #image_path = 'path' + str(counter) + ".png"
-                #print("original_path", original_path)
-                #print("fake_path:", fake_path)
-                print("file_name:", batch_files[0][0])
-                copyfile(batch_files[0][0], original_path)
-                #Does not work to save original this way
-                #print("originalA:",original_A.shape)
-                #save_images(original_A, [1, 1, 0], original_path)
-                #print("fake_B:",fake_B.shape)
-                save_images(fake_B, [1, 1], fake_path)
+                if counter % 14 == 0:
+                    #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                    #path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                    path = "../MATLAB/to_matlab/"
+                    original_path = path + "originals/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    fake_path = path + "fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    #image_path = 'path' + str(counter) + ".png"
+                    #print("original_path", original_path)
+                    #print("fake_path:", fake_path)
+                    print("file_name:", batch_files[0][0])
+                    copyfile(batch_files[0][0], original_path)
+                    #Does not work to save original this way
+                    #print("originalA:",original_A.shape)
+                    #save_images(original_A, [1, 1, 0], original_path)
+                    #print("fake_B:",fake_B.shape)
+                    save_images(fake_B, [1, 1], fake_path)
 
                 # Update D network
                 _, summary_str = self.sess.run(
