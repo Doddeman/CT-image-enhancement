@@ -12,11 +12,14 @@ clear all
 % end
 % 
 % b = 2
-images = dir('../to_matlab/*.png');
-n = length(images)
-z = zeros(n,1);
+% images = dir('../to_matlab/*.png');
+% n = length(images)
+% z = zeros(n,1);
+% 
+% z(6) = 40;
 
-z(6) = 40;
+
+h = mod(3,2);
 
 %[height, width, color] = size(image);
 %imshow(image);

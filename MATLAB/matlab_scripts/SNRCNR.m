@@ -35,17 +35,20 @@ end
 
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
-SNRvector = zeros(length(originals),1);
-CNRvector = zeros(length(originals),1);
+SNRvector = zeros(50,1);
+CNRvector = zeros(50,1);
+epochSNR = 0;
+epochCNR = 0;
+epoch = 0;
+batch = 1;
 for i = 1:length(originals)
-    i
+    %i
     %Get original
     originalName = originals(i).name;
     originalPath = strcat('../to_matlab/originals/', originalName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     original = im2double(imread(originalPath));
-    original = rgb2gray(original);
     
     %Get original ROI
     [height,width] = size(original);
@@ -74,7 +77,7 @@ for i = 1:length(originals)
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/', fakeName);
+    fakePath = strcat('../to_matlab/fakes/', fakeName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     fake = im2double(imread(fakePath));
@@ -82,7 +85,7 @@ for i = 1:length(originals)
     
     %Get fake ROI
     [height,width] = size(fake);
-    fakelC = centerOfMass(fake);
+    fakeC = centerOfMass(fake);
     fakeCenterX = round(fakeC(2));
     fakeCenterY = round(fakeC(1));
   
@@ -90,7 +93,7 @@ for i = 1:length(originals)
     maskSizeX = round(width/4);
     maskSizeY = round(height/4);  
     mask(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 1;
-    maskedImage = original .* mask;
+    maskedImage = fake .* mask;
     fakeROI = maskedImage(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX);
     
     fakeMeanROI = mean(mean(fakeROI));
@@ -98,17 +101,60 @@ for i = 1:length(originals)
     originalSNR = originalMeanROI / originalStdBackground;
     originalCNR = originalMeanROI - originalMeanBackground;
     fakeSNR = fakeMeanROI / originalStdBackground;
-    fakeCNR = fakeMeanROI - fakeMeanROI;
+    fakeCNR = fakeMeanROI - originalMeanBackground;
     
     SNRdifference = fakeSNR - originalSNR;
     CNRdifference = fakeCNR - originalCNR;
     
-    SNRvector(i) = SNRdifference;
-    CNRvector(i) = CNRdifference; 
+    epochSNR = epochSNR + SNRdifference;
+    epochCNR = epochCNR + CNRdifference;
+    
+    if mod(epoch,2) == 0
+        if batch == 105
+            %disp('105')
+            meanSNR = epochSNR / batch;
+            meanCNR = epochCNR / batch;
+            batch = 1;
+            epoch = epoch + 1;
+            SNRvector(epoch) = meanSNR;
+            CNRvector(epoch) = meanCNR; 
+            epochSNR = 0;
+            epochCNR = 0;
+        end
+    else
+        if batch == 106
+            %disp('106')
+            meanSNR = epochSNR / batch;
+            meanCNR = epochCNR / batch;
+            batch = 1;
+            epoch = epoch + 1;
+            SNRvector(epoch) = meanSNR;
+            CNRvector(epoch) = meanCNR; 
+            epochSNR = 0;
+            epochCNR = 0;
+        end
+    end
+    
+
+    
+    batch = batch + 1;
 end
 
 %%%%%%%%%%%%%% PLOT RESULTS %%%%%%%%%%%%
 
+figure(1)
+hist(SNRvector);                                      
+title('SNR improvement')
+xlabel('Samples')
+ylabel('SNR difference')
+
+figure(2)
+hist(CNRvector);
+title('CNR improvement')
+xlabel('Samples')
+ylabel('CNR difference')
+
+%%
 figure(1)
 plot(SNRvector);                                      
 title('SNR improvement')
