@@ -6,4 +6,4 @@ datasets/*
 logs/*
 sample/*
 test/*
-.test.py
+/test.py
