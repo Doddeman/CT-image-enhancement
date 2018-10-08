@@ -5,7 +5,7 @@
 
 %Get images and sort after date modified
 %images = dir('E:\david\development\MATLAB\to_matlab/*.png');
-originals = dir('../to_matlab/originals/*.png');
+originals = dir('../to_matlab/originals1/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -16,7 +16,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes/*.png');
+fakes = dir('../to_matlab/fakes1/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -35,8 +35,8 @@ end
 
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
-SNRvector = zeros(50,1);
-CNRvector = zeros(50,1);
+SNRvector = zeros(25,1);
+CNRvector = zeros(25,1);
 epochSNR = 0;
 epochCNR = 0;
 epoch = 0;
@@ -110,31 +110,42 @@ for i = 1:length(originals)
     epochSNR = epochSNR + SNRdifference;
     epochCNR = epochCNR + CNRdifference;
     
-    if mod(epoch,2) == 0
-        if batch == 105
-            %disp('105')
-            meanSNR = epochSNR / batch;
-            meanCNR = epochCNR / batch;
-            batch = 1;
-            epoch = epoch + 1;
-            SNRvector(epoch) = meanSNR;
-            CNRvector(epoch) = meanCNR; 
-            epochSNR = 0;
-            epochCNR = 0;
-        end
-    else
-        if batch == 106
-            %disp('106')
-            meanSNR = epochSNR / batch;
-            meanCNR = epochCNR / batch;
-            batch = 1;
-            epoch = epoch + 1;
-            SNRvector(epoch) = meanSNR;
-            CNRvector(epoch) = meanCNR; 
-            epochSNR = 0;
-            epochCNR = 0;
-        end
+    % End of epoch?
+    if mod(i,1478) == 0
+        meanSNR = epochSNR / 1478;
+        meanCNR = epochCNR / 1478;
+        SNRvector(epoch) = meanSNR;
+        CNRvector(epoch) = meanCNR;
+        epochSNR = 0;
+        epochCNR = 0;
+        epoch = epoch + 1;
     end
+    
+%     if mod(epoch,2) == 0
+%         if batch == 105
+%             %disp('105')
+%             meanSNR = epochSNR / batch;
+%             meanCNR = epochCNR / batch;
+%             batch = 1;
+%             epoch = epoch + 1;
+%             SNRvector(epoch) = meanSNR;
+%             CNRvector(epoch) = meanCNR; 
+%             epochSNR = 0;
+%             epochCNR = 0;
+%         end
+%     else
+%         if batch == 106
+%             %disp('106')
+%             meanSNR = epochSNR / batch;
+%             meanCNR = epochCNR / batch;
+%             batch = 1;
+%             epoch = epoch + 1;
+%             SNRvector(epoch) = meanSNR;
+%             CNRvector(epoch) = meanCNR; 
+%             epochSNR = 0;
+%             epochCNR = 0;
+%         end
+%     end
     
 
     
