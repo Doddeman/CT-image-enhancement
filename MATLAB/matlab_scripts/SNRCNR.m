@@ -72,7 +72,8 @@ for i = 1:length(originals)
     backgroundValues = original(backgroundIndices);
     
     originalMeanROI = mean(mean(originalROI));
-    originalStdBackground = std(backgroundValues);
+    %Add 1 to normalize over number of pixels
+    originalStdBackground = std(backgroundValues, 1);
     originalMeanBackground = mean(backgroundValues);
 
     % Get fake image

@@ -1,3 +1,4 @@
 to_matlab
 to_matlab/*
 matlab_scripts/*.asv
+matlab_scripts/test.m

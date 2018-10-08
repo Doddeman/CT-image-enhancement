@@ -1,7 +1,10 @@
 %Useful commands
 
 clear all
-% % m = [1 2 3; 0 0 0; 1 2 3];
+m = [1 2 3; 0 0 0; 1 2 3];
+s = std(m);
+s = [2 4 4 4 5 5 7 9];
+sd = std(s, 1);
 % % backgroundIndices = find(m < 2);
 % % hej = mean(m);
 % % hej2=mean(hej);
@@ -20,6 +23,8 @@ clear all
 
 
 h = mod(3,2);
+
+
 
 %[height, width, color] = size(image);
 %imshow(image);

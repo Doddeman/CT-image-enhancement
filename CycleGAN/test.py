@@ -5,5 +5,8 @@ def test():
 
 hej, hej1 = test()
 
+
+print ((hej1+1)%7)
+
 print(hej)
 print(hej1)

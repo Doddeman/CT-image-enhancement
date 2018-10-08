@@ -168,12 +168,12 @@ class cyclegan(object):
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Save images for cnr and snr calculations in matlab
-                if counter % 14 == 0:
+                if (epoch + 1) % 5 == 0:
                     #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
                     #path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
                     path = "../MATLAB/to_matlab/"
-                    original_path = path + "originals/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    fake_path = path + "fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    original_path = path + "originals1/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    fake_path = path + "fakes1/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
                     #image_path = 'path' + str(counter) + ".png"
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
