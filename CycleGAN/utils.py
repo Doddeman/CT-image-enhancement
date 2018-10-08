@@ -44,7 +44,6 @@ class ImagePool(object):
 
 def load_test_data(image_path, fine_size=256, input_c_dim=1):
     img = imread(image_path)
-
     img = scipy.misc.imresize(img, [fine_size, fine_size])
     img = img[:, :, :input_c_dim] #Changing to correct channel dim
     img = img/127.5 - 1
