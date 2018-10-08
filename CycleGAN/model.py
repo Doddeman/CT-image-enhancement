@@ -259,7 +259,7 @@ class cyclegan(object):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         if args.which_direction == 'AtoB':
-            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
+            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/a'))
         elif args.which_direction == 'BtoA':
             sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testB'))
         else:
@@ -281,18 +281,19 @@ class cyclegan(object):
             self.testA, self.test_B)
 
         for sample_file in sample_files:
-            if sample_file[-4:] == ".png":
-                print('Processing image: ' + sample_file)
-                sample_image = [load_test_data(sample_file, args.fine_size)]
-                sample_image = np.array(sample_image).astype(np.float32)
-                image_path = os.path.join(args.test_dir,
-                                          '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
-                fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
-                save_images(fake_img, [1, 1], image_path)
-                index.write("<td>%s</td>" % os.path.basename(image_path))
-                index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
-                    '..' + os.path.sep + sample_file)))
-                index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
-                    '..' + os.path.sep + image_path)))
-                index.write("</tr>")
+            print('Processing image: ' + sample_file)
+            sample_image = [load_test_data(sample_file, args.fine_size)]
+            #Get image size
+            sample_image = np.array(sample_image).astype(np.float32)
+            image_path = os.path.join(args.test_dir,
+                                      '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
+            fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
+            #Resize image
+            save_images(fake_img, [1, 1], image_path)
+            index.write("<td>%s</td>" % os.path.basename(image_path))
+            index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
+                '..' + os.path.sep + sample_file)))
+            index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
+                '..' + os.path.sep + image_path)))
+            index.write("</tr>")
         index.close()
