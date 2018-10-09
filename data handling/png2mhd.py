@@ -2,17 +2,28 @@ import re
 import os
 import SimpleITK as sitk
 import numpy as np
+from scipy.misc import imsave
 
-FROM_PATH = "to_png"
-TO_PATH ="to_mhd"
+FROM_PATH = "to_png/"
+TO_PATH ="to_mhd/"
 
 #
-fname = "png/A10_T1_S98.png"
+fname = "to_png/mhd_t1_s5.png"
 image = sitk.ReadImage(fname)
 image_matrix = sitk.GetArrayFromImage(image) #get numpy ndarray
-multi_channel_3Dimage = sitk.Image([2,4,8], sitk.sitkVectorFloat32, 5)
-print(image_matrix.shape)
-print("m", multi_channel_3Dimage)
+#multi_channel_3Dimage = sitk.Image([2,4,8], sitk.sitkVectorFloat32, 5)
+'''print("i_m",image_matrix)
+height, width = image_matrix.shape
+print("h:", int(height))
+print("w:", width)
+
+
+3d = np.zeros((2, int(height), int(width)))
+print("hej",hej)
+hej[1] = image_matrix
+print("hej",hej)'''
+
+#print("m", multi_channel_3Dimage)
 #mat = sitk.matrix[itk.D]()
 #image = fname.split("\\")[-1]
 #path, image = os.path.split(fname)
@@ -65,13 +76,31 @@ def png_to_mhd(sourceDir, destDir):
         print("Images:")
         for image in images:
             print (image)'''
+
+    result = []
+    width = 256
+    height = 256
     for patient in patient_list:
         print("patient,",patient)
         images = my_dict[patient]
         n_of_slices = len(images)
+        mhd = np.zeros((n_of_slices, height, width))
+        saveFileName = destDir +  'd' + patient + '.mhd'
         print(n_of_slices)
+        slice = 0
         for image in images:
-            print(image)
+            image = sitk.ReadImage(fname)
+            #get numpy ndarray
+            image_matrix = sitk.GetArrayFromImage(image)
+            mhd[slice] = image_matrix
+            slice += 1
+            #print(image)
+
+        print (mhd.shape)
+        #result.append(mhd)
+        imsave(saveFileName, mhd)
+        print('Saved {}'.format(saveFileName))
+    #print("result:",result)
 
     
 
