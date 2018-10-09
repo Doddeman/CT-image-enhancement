@@ -35,17 +35,17 @@ end
 
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
-SNRvector = zeros(25,1);
-CNRvector = zeros(25,1);
+SNRvector = zeros(16,1);
+CNRvector = zeros(16,1);
 epochSNR = 0;
 epochCNR = 0;
-epoch = 0;
+epoch = 1;
 batch = 1;
 for i = 1:length(originals)
-    %i
+    i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/originals/', originalName);
+    originalPath = strcat('../to_matlab/originals1/', originalName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     original = im2double(imread(originalPath));
@@ -78,7 +78,7 @@ for i = 1:length(originals)
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes/', fakeName);
+    fakePath = strcat('../to_matlab/fakes1/', fakeName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     fake = im2double(imread(fakePath));
