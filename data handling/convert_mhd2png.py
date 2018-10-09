@@ -33,6 +33,7 @@ def mhd_to_png(sourceDir, destDir):
                     mhd_image_matrix = sitk.GetArrayFromImage(mhd_image)
                     # Save all individual slices
                     for s in range(0, mhd_image_matrix.shape[0]):
+                        print("n of slices:", mhd_image_matrix.shape[0])
                         sliceMat = mhd_image_matrix[s - 1, :, :]
                         # Convert to float to avoid overflow or underflow losses.
                         image_2d = sliceMat.astype(float)
@@ -79,8 +80,8 @@ if __name__ == "__main__":
         destDir = sys.argv[2]
     else:
         # User defined settings
-        sourceDir = '/Volumes/cmiv/users/vikgu/Data/CTData_RVStrain_Lilian/TrackingData_SA/mhd_files'
-        destDir = '/Users/Vikas/Downloads/test/output'
+        sourceDir = 'mhd'
+        destDir = 'to_png'
         print('Using predefined sourceDir and destDir')
 
     # Call the function
