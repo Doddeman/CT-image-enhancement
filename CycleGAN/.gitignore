@@ -7,3 +7,6 @@ logs/*
 sample/*
 test/*
 /test.py
+fake_fnames
+org_fnames
+pre_fnames

@@ -165,25 +165,39 @@ class cyclegan(object):
                     [self.fake_A, self.fake_B, self.g_optim, self.g_sum],
                     feed_dict={self.real_data: batch_images, self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
-                [fake_A, fake_B] = self.pool([fake_A, fake_B])
+                #########################
 
                 # Save images for cnr and snr calculations in matlab
-                if epoch % 2 == 0:
-                    #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                    #path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                    path = "../MATLAB/to_matlab/"
-                    original_path = path + "originals1/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    fake_path = path + "fakes1/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    #image_path = 'path' + str(counter) + ".png"
-                    #print("original_path", original_path)
-                    #print("fake_path:", fake_path)
-                    print("file_name:", batch_files[0][0])
-                    copyfile(batch_files[0][0], original_path)
-                    #Does not work to save original this way
-                    #print("originalA:",original_A.shape)
-                    #save_images(original_A, [1, 1, 0], original_path)
-                    #print("fake_B:",fake_B.shape)
-                    save_images(fake_B, [1, 1], fake_path)
+                #if epoch % 2 == 0:
+                #print("fname:",fname)
+                #original_path = "org_fnames/" + fname[0] + "_" + fname[1]
+                #pre_path = "pre_fnames/" + fname[0] + "_" + fname[1]
+                #fake_path = "fake_fnames/" + fname[0] + "_" + fname[1]
+
+                path = "../MATLAB/to_matlab/"
+                original_path = path + "originals/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                fake_path = path + "fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+
+                #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                #path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+
+                #fake_path = 'path' + str(counter) + ".png"
+                #print("original_path", original_path)
+                #print("fake_path:", fake_path)
+                #print("file_name:", batch_files[0][0])
+                copyfile(batch_files[0][0], original_path)
+
+                #Does not work to save original this way
+                #print("originalA:",original_A.shape)
+                #save_images(original_A, [1, 1, 0], original_path)
+
+                #print("fake_B:",fake_B.shape)
+                save_images(fake_B, [1, 1], fake_path)
+                ###########################
+
+                [fake_A, fake_B] = self.pool([fake_A, fake_B])
+
+
 
                 # Update D network
                 _, summary_str = self.sess.run(
