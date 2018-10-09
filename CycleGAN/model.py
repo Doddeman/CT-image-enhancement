@@ -284,11 +284,13 @@ class cyclegan(object):
             print('Processing image: ' + sample_file)
             sample_image = [load_test_data(sample_file, args.fine_size)]
             #Get image size
+            #But will probably only receive 256x256
             sample_image = np.array(sample_image).astype(np.float32)
             image_path = os.path.join(args.test_dir,
                                       '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
             #Resize image
+            #But will probably only receive 256x256
             save_images(fake_img, [1, 1], image_path)
             index.write("<td>%s</td>" % os.path.basename(image_path))
             index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
