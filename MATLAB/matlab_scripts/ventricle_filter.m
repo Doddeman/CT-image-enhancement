@@ -1,7 +1,5 @@
 %% Remove images not containing ventricles %%%
 
-
-
 %path = strcat('../PNG_Images_AC/', 'H12_T1_S14.png')
 %image = imread(path);
 

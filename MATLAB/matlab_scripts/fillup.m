@@ -1,5 +1,7 @@
 %%%%%%% Fill up high/low folders with all images %%%%%%%%
-
+% After sampling and classification with regression,
+% use this script to get all the images of one patient
+% into the desired folder depending on its quality. 
 
 %%%%%%%%%%%%%%%%%% good quality %%%%%%%%%%%%%%%%%
 clear all

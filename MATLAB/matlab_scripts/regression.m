@@ -1,3 +1,10 @@
+% This code calculates the SNR and CNR of images and 
+% plots them against each other. It then performs a 
+% regression (linear right now) to make an estimation 
+% of which images have high quality and which have low.
+% Works best if the images have been sampled beforehand.
+% Use the sampling script to get middle slices for patients
+
 clear all
 %close all
 
