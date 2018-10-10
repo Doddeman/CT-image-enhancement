@@ -5,7 +5,7 @@
 
 %Get images and sort after date modified
 %images = dir('E:\david\development\MATLAB\to_matlab/*.png');
-originals = dir('../to_matlab/originals/*.png');
+originals = dir('../to_matlab/originals1/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -16,7 +16,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes/*.png');
+fakes = dir('../to_matlab/fakes1/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -33,7 +33,10 @@ if length(originals) ~= length(fakes)
     return
 end
 
-%% Testing
+L = length(originals);
+
+%%%%% Testing
+%% 
 n = 1000;
 figure(80)
 original = originals(n).name;
@@ -52,10 +55,10 @@ imshow(fakepath)
 images_per_epoch = 1478;
 n_of_epochs = length(originals)/images_per_epoch;
 
-SNRimprove = zeros(n_of_epochs,1);
-CNRimprove = zeros(n_of_epochs,1);
-epochSNRimprove = 0;
-epochCNRimprove = 0;
+SNRvector = zeros(n_of_epochs,1);
+CNRvector = zeros(n_of_epochs,1);
+epochSNR = 0;
+epochCNR = 0;
 
 % SNRactual = zeros(n_of_epochs,1);
 % CNRactual = zeros(n_of_epochs,1);
@@ -64,11 +67,11 @@ epochCNRimprove = 0;
 
 epoch = 1;
 
-for i = 1:100
+for i = 1:1
     i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/originals/', originalName);
+    originalPath = strcat('../to_matlab/originals1/', originalName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     original = im2double(imread(originalPath));
@@ -93,7 +96,7 @@ for i = 1:100
     %twos = sum(image(:) == 2)
     backgroundIndices = find(original < 2);
     backgroundValues = original(backgroundIndices);
-
+   
     originalMeanROI = mean(mean(originalROI));
     %Add 1 to normalize over number of pixels
     originalStdBackground = std(backgroundValues, 1);
@@ -101,7 +104,7 @@ for i = 1:100
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes/', fakeName);
+    fakePath = strcat('../to_matlab/fakes1/', fakeName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     fake = im2double(imread(fakePath));
@@ -129,8 +132,13 @@ for i = 1:100
 
     SNRdifference = fakeSNR - originalSNR;
     CNRdifference = fakeCNR - originalCNR;
-    epochSNRimprove = epochSNRimprove + SNRdifference;
-    epochCNRimprove = epochCNRimprove + CNRdifference;
+ 
+    nominator = sum(sum(fake))^2;
+    denominator = (sum(sum(fake))-sum(sum(original)))^2;
+    newSNR = nominator/denominator;
+
+    epochSNR = epochSNR + newSNR;
+    epochCNR = epochCNR + CNRdifference;
 
 %     epochSNRactual = epochSNRactual + fakeSNR;
 %     epochCNRactual = epochCNRactual + fakeCNR;
@@ -138,12 +146,12 @@ for i = 1:100
     % End of epoch?
     if mod(i,images_per_epoch) == 0
         i
-        meanSNR = epochSNRimprove / images_per_epoch;
-        meanCNR = epochCNRimprove / images_per_epoch;
-        SNRimprove(epoch) = meanSNR;
-        CNRimprove(epoch) = meanCNR;
-        epochSNRimprove = 0;
-        epochCNRimprove = 0;
+        meanSNR = epochSNR / images_per_epoch;
+        meanCNR = epochCNR / images_per_epoch;
+        SNRvector(epoch) = meanSNR;
+        CNRvector(epoch) = meanCNR;
+        epochSNR = 0;
+        epochCNR = 0;
 
 %         meanSNR = epochSNRactual / images_per_epoch;
 %         meanCNR = epochCNRactual / images_per_epoch;
@@ -159,26 +167,26 @@ end
 %%%%%%%%%%%%%% PLOT RESULTS %%%%%%%%%%%%
 %%
 figure(70)
-hist(SNRimprove);
+hist(SNRvector);
 title('SNR improvement')
 xlabel('SNR difference')
 ylabel('Epochs')
 
 figure(77)
-hist(CNRimprove);
+hist(CNRvector);
 title('CNR improvement')
 xlabel('CNR difference')
 ylabel('Epochs')
 
 %%
 figure(1)
-plot(SNRimprove);
+plot(SNRvector);
 title('SNR improvement')
 xlabel('Epoch')
 ylabel('SNR difference')
 
 figure(2)
-plot(CNRimprove);
+plot(CNRvector);
 title('CNR improvement')
 xlabel('Epoch')
 ylabel('CNR difference')
