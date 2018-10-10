@@ -133,11 +133,17 @@ for i = 1:1
     SNRdifference = fakeSNR - originalSNR;
     CNRdifference = fakeCNR - originalCNR;
  
+    %Weird SNR, should be 10log10
     nominator = sum(sum(fake))^2;
     denominator = (sum(sum(fake))-sum(sum(original)))^2;
-    newSNR = nominator/denominator;
+    weirdSNR = nominator/denominator;
+    
+    %PSNR
+    peak = max(max(fake))^2;
+    denominator = (sum(sum(fake))-sum(sum(original)))^2;
+    denominator = denominator/(origHeight*origWidth*fakeHeight*fakeWidth);
 
-    epochSNR = epochSNR + newSNR;
+    epochSNR = epochSNR + weirdSNR;
     epochCNR = epochCNR + CNRdifference;
 
 %     epochSNRactual = epochSNRactual + fakeSNR;
