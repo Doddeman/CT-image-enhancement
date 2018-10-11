@@ -138,9 +138,15 @@ for i = 1:L
     CNRdifference = fakeCNR - originalCNR;
  
     %Weird SNR, should be 10log10
-    %nominator = sum(sum(fake))^2;
-    %denominator = (sum(sum(fake))-sum(sum(original)))^2;
-    %weirdSNR = nominator/denominator;
+    nominator = 0;
+    denominator = 0;
+    for i = 1:n_of_pixels 
+        curr = original(i)^2;
+        curr2 = (original(i)-fake(i))^2;
+        nominator = nominator + curr;
+        denominator = denominator + curr2;
+    end
+    snr = nominator/denominator; 
     
     %PSNR
 %     peak = max(max(fake))^2;
@@ -152,7 +158,7 @@ for i = 1:L
 %     
 %     nofindices2 = length(find(original<0));
     
-    [peaksnr,snr] = psnr(fake,original);
+    [peaksnr] = psnr(fake,original);
 
     epochPSNR = epochPSNR + peaksnr;
     epochSNR = epochSNR + snr;
