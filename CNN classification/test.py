@@ -1,7 +1,7 @@
 from __future__ import print_function
 import tensorflow as tf
 import os
-from sklearn.model_selection import train_test_split
+#from sklearn.model_selection import train_test_split
 from tensorflow.python.tools import inspect_checkpoint as chkp
 
 #just ignore  warning that AVX2 is not used
@@ -9,7 +9,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 #print ("hello der")
 print (os.getcwd())
-DATASET_PATH = 'samples_test' # the dataset file or root folder path.
+DATASET_PATH = 'P:\\Shared\\ImagesFromVikas\\middle_slices' # the dataset file or root folder path.
 
 # Image Parameters
 N_CLASSES = 2 # total number of classes

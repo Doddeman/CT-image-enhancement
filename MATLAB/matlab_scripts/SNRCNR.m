@@ -5,7 +5,7 @@ clear all
 
 %Get images and sort after date modified
 %images = dir('E:\david\development\MATLAB\to_matlab/*.png');
-originals = dir('../to_matlab/originals/*.png');
+originals = dir('../to_matlab/originals1/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -16,7 +16,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes/*.png');
+fakes = dir('../to_matlab/fakes1/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -70,10 +70,10 @@ epochCNR = 0;
 epoch = 1;
 
 for i = 1:L
-    i
+    %i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/originals/', originalName);
+    originalPath = strcat('../to_matlab/originals1/', originalName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     original = im2double(imread(originalPath));
@@ -103,12 +103,12 @@ for i = 1:L
    
     originalMeanROI = mean(mean(originalROI));
     %Add 1 to normalize over number of pixels
-    originalStdBackground = std(backgroundValues, 1);
+    %originalStdBackground = std(backgroundValues, 1);
     originalMeanBackground = mean(backgroundValues);
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes/', fakeName);
+    fakePath = strcat('../to_matlab/fakes1/', fakeName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     fake = im2double(imread(fakePath));
@@ -129,24 +129,25 @@ for i = 1:L
 
     fakeMeanROI = mean(mean(fakeROI));
 
-    originalSNR = originalMeanROI / originalStdBackground;
+    %originalSNR = originalMeanROI / originalStdBackground;
     originalCNR = originalMeanROI - originalMeanBackground;
-    fakeSNR = fakeMeanROI / originalStdBackground;
+    %fakeSNR = fakeMeanROI / originalStdBackground;
     fakeCNR = fakeMeanROI - originalMeanBackground;
 
-    SNRdifference = fakeSNR - originalSNR;
+    %SNRdifference = fakeSNR - originalSNR;
     CNRdifference = fakeCNR - originalCNR;
  
     %Weird SNR, should be 10log10
-    nominator = 0;
-    denominator = 0;
-    for i = 1:n_of_pixels 
-        curr = original(i)^2;
-        curr2 = (original(i)-fake(i))^2;
-        nominator = nominator + curr;
-        denominator = denominator + curr2;
-    end
-    snr = nominator/denominator; 
+%     n_of_pixels = origHeight*origWidth;
+%     nominator = 0;
+%     denominator = 0;
+%     for j = 1:n_of_pixels 
+%         curr = original(j)^2;
+%         curr2 = (original(j)-fake(j))^2;
+%         nominator = nominator + curr;
+%         denominator = denominator + curr2;
+%     end
+%     snr = nominator/denominator; 
     
     %PSNR
 %     peak = max(max(fake))^2;
@@ -158,7 +159,7 @@ for i = 1:L
 %     
 %     nofindices2 = length(find(original<0));
     
-    [peaksnr] = psnr(fake,original);
+    [peaksnr, snr] = psnr(fake,original);
 
     epochPSNR = epochPSNR + peaksnr;
     epochSNR = epochSNR + snr;

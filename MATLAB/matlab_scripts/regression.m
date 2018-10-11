@@ -72,23 +72,20 @@ cnr2 = 20*cnr;
 
 
 %%
-%clear all;
+clear all;
 %close all;
+images = dir('P:\Shared\ImagesFromVikas\middle_slices/*.png');
 
-
-% SNRvector = [];
-% CNRvector = [];
 SNRvector = zeros(length(images),1);
 CNRvector = zeros(length(images),1);
 for i = 1:length(images)
-%for i = 1:105
     i
     name = images(i).name;
-    path = strcat('../to_matlab/', name);
+    path = strcat('P:\Shared\ImagesFromVikas\middle_slices/', name);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     image = im2double(imread(path));
-    image = rgb2gray(image);
+    %image = rgb2gray(image);
     [height,width] = size(image);
     c = centerOfMass(image);
     centerX = round(c(2));
@@ -97,13 +94,6 @@ for i = 1:length(images)
     mask = double(zeros(height, width));
     maskSizeX = round(width/4);
     maskSizeY = round(height/4);
-%     if height < 130 && width < 130 && height ~= width
-%         maskSizeX = 50;
-%         maskSizeY = 40;
-%     else
-%         maskSizeX = round(width/5);
-%         maskSizeY = round(height/7);
-%     end
     mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
     maskedImage = image .* mask;
     maskedImage = maskedImage(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
@@ -121,18 +111,15 @@ for i = 1:length(images)
     meanBackground = mean(backgroundValues);
 
     signal = meanROI;
-    contrast = meanROI-meanBackground;
     noise = sdBackground;
     snr = signal/noise;
-    c = contrast/noise;
-    cnr = log10(c);
-    cnr = 20*cnr;
-    %cnr = meanROI-sdBackground;
-
-    %SNRvector = [SNRvector; snr];
-    %CNRvector = [CNRvector; contrast]; 
+    cnr = meanROI-meanBackground;
+    
+    %contrast = meanROI-meanBackground;
+    %c = contrast/noise;
+ 
     SNRvector(i) = snr;
-    CNRvector(i) = contrast;
+    CNRvector(i) = cnr;
 end
 
 %%
@@ -161,27 +148,30 @@ CNRmean = mean(CNRvector);
 
 fitmodel = fit(SNRvector, CNRvector,'poly1')
 %%
-
-p1 = 10.96;
-p2 = 62.07;
+close all;
+p1 = 0.009172;
+p2 = 0.08573;
 goodX = [];
 badX = [];
 goodY = [];
 badY = [];
 for i=1:length(CNRvector)
+    i
     name = images(i).name;
-    path = strcat('../samples/', name);
+    fromPath = strcat('P:\Shared\ImagesFromVikas\middle_slices\', name);
+    toPathLow = strcat('P:\Shared\ImagesFromVikas\sample_low_quality2\', name);
+    toPathHigh = strcat('P:\Shared\ImagesFromVikas\sample_high_quality2\', name);
     image = double(imread(path));
     x = SNRvector(i);
     y = CNRvector(i);
     if y < p1*x + p2
         badY = [badY;y];
         badX = [badX;x];
-        copyfile (path, '../sample_low_quality');
+        copyfile (fromPath, toPathLow);
     else
         goodY = [goodY;y];
         goodX = [goodX;x];
-        copyfile (path, '../sample_high_quality');
+        copyfile (fromPath, toPathHigh);
     end
 end
 
