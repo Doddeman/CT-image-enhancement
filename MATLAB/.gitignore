@@ -3,3 +3,4 @@ matlab_scripts/*.asv
 matlab_scripts/test.m
 matlab_scripts/artifacts
 matlab_scripts/clean
+matlab_scripts/*.mat
