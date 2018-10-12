@@ -5,7 +5,7 @@ clear all
 
 %Get images and sort after date modified
 %images = dir('E:\david\development\MATLAB\to_matlab/*.png');
-originals = dir('../to_matlab/originals1/*.png');
+originals = dir('../to_matlab/oppo_origs/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -16,7 +16,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes1/*.png');
+fakes = dir('../to_matlab/oppo_fakes/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -48,8 +48,6 @@ fake = fakes(n).name;
 fakepath = strcat('../to_matlab/fakes/', fake)
 imshow(fakepath)
 
-
-
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
 images_per_epoch = 1478;
@@ -62,18 +60,12 @@ epochPSNR = 0;
 epochSNR = 0;
 epochCNR = 0;
 
-% SNRactual = zeros(n_of_epochs,1);
-% CNRactual = zeros(n_of_epochs,1);
-% epochSNRactual = 0;
-% epochCNRactual = 0;
-
 epoch = 1;
-
 for i = 1:L
     %i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/originals1/', originalName);
+    originalPath = strcat('../to_matlab/oppo_origs/', originalName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     original = im2double(imread(originalPath));
@@ -108,7 +100,7 @@ for i = 1:L
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes1/', fakeName);
+    fakePath = strcat('../to_matlab/oppo_fakes/', fakeName);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     fake = im2double(imread(fakePath));
@@ -165,9 +157,6 @@ for i = 1:L
     epochSNR = epochSNR + snr;
     epochCNR = epochCNR + CNRdifference;
 
-%     epochSNRactual = epochSNRactual + fakeSNR;
-%     epochCNRactual = epochCNRactual + fakeCNR;
-
     % End of epoch?
     if mod(i,images_per_epoch) == 0
         i
@@ -181,31 +170,11 @@ for i = 1:L
         epochSNR = 0;
         epochCNR = 0;
 
-%         meanSNR = epochSNRactual / images_per_epoch;
-%         meanCNR = epochCNRactual / images_per_epoch;
-%         SNRactual(epoch) = meanSNR;
-%         CNRactual(epoch) = meanCNR;
-%         epochSNRactual = 0;
-%         epochCNRactual = 0;
-
         epoch = epoch + 1;
     end
 end
 
 %%%%%%%%%%%%%% PLOT RESULTS %%%%%%%%%%%%
-%%
-figure(70)
-hist(SNRvector);
-title('SNR improvement')
-xlabel('SNR difference')
-ylabel('Epochs')
-
-figure(77)
-hist(CNRvector);
-title('CNR improvement')
-xlabel('CNR difference')
-ylabel('Epochs')
-
 %%
 figure(1)
 plot(SNRvector);
@@ -213,26 +182,14 @@ title('SNR improvement')
 xlabel('Epoch')
 ylabel('SNR difference')
 
-figure(2)
-plot(CNRvector);
-title('CNR improvement')
-xlabel('Epoch')
-ylabel('CNR difference')
-
-figure(3)
-plot(PSNRvector);
-title('PSNR')
-xlabel('Epoch')
-ylabel('CNR difference')
-
-% figure(3)
-% plot(SNRactual);
-% title('Actual SNR')
+% figure(2)
+% plot(CNRvector);
+% title('CNR improvement')
 % xlabel('Epoch')
-% ylabel('SNR')
+% ylabel('CNR difference')
 % 
-% figure(4)
-% plot(CNRactual);
-% title('Actual CNR')
+% figure(3)
+% plot(PSNRvector);
+% title('PSNR')
 % xlabel('Epoch')
-% ylabel('CNR')
+% ylabel('CNR difference')

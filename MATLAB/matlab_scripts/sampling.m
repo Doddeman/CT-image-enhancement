@@ -55,7 +55,7 @@ patients = unique(all_patients);
 
 
 %%
-% Current choosing of middle slices for NewData
+% Current method for choosing of middle slices for NewData
 path = 'P:\Shared\ImagesFromVikas\NewData/';
 chosen_images = [];
 for i = 1:length(patients)

@@ -168,31 +168,31 @@ class cyclegan(object):
                 #########################
 
                 # Save images for cnr and snr calculations in matlab
-                #if epoch % 2 == 0:
+                if epoch % 4 == 0:
                 #print("fname:",fname)
                 #original_path = "org_fnames/" + fname[0] + "_" + fname[1]
                 #pre_path = "pre_fnames/" + fname[0] + "_" + fname[1]
                 #fake_path = "fake_fnames/" + fname[0] + "_" + fname[1]
 
-                path = "../MATLAB/to_matlab/"
-                original_path = path + "oppo_origs/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                fake_path = path + "oppo_fakes/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    path = "../MATLAB/to_matlab/"
+                    original_path = path + "origs_new/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
+                    fake_path = path + "fakes_new/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
 
-                #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                #path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                    #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
+                    #path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
 
-                #fake_path = 'path' + str(counter) + ".png"
-                #print("original_path", original_path)
-                #print("fake_path:", fake_path)
-                #print("file_name:", batch_files[0][0])
-                copyfile(batch_files[0][1], original_path)
+                    #fake_path = 'path' + str(counter) + ".png"
+                    #print("original_path", original_path)
+                    #print("fake_path:", fake_path)
+                    #print("file_name:", batch_files[0][0])
+                    copyfile(batch_files[0][0], original_path)
 
-                #Does not work to save original this way
-                #print("originalA:",original_A.shape)
-                #save_images(original_A, [1, 1, 0], original_path)
+                    #Does not work to save original this way
+                    #print("originalA:",original_A.shape)
+                    #save_images(original_A, [1, 1, 0], original_path)
 
-                #print("fake_B:",fake_B.shape)
-                save_images(fake_A, [1, 1], fake_path)
+                    #print("fake_B:",fake_B.shape)
+                    save_images(fake_B, [1, 1], fake_path)
                 ###########################
 
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])

@@ -3,18 +3,22 @@ import os
 from shutil import copyfile
 
 #print (os.getcwd())
-FROM_PATH = 'images/low'
-TO_PATH = 'images_test/low'
+#FROM_PATH = 'C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\CycleGAN\\datasets\\ct_lq2hq_new\\trainA'
+#TO_PATH = 'C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\CycleGAN\\datasets\\ct_lq2hq_new\\testA'
 
-counter = 0
+FROM_PATH = 'C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\CycleGAN\\datasets\\ct_lq2hq_new\\trainB'
+TO_PATH = 'C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\CycleGAN\\datasets\\ct_lq2hq_new\\testB'
+
+'''N_FILES = 0
 for file in os.listdir(FROM_PATH):
     if file.endswith(".png"):
-    	counter+=1
+    	N_FILES+=1'''
 
-N_FILES = counter
-print("Number of files:", counter)
+
+#N_FILES = len([file for file in os.listdir(FROM_PATH) if os.path.isfile(file)])
+N_FILES = 18251
 N_TEST_FILES = int(round(N_FILES*0.3))
-print("Number of test files:", N_TEST_FILES)
+
 sample_indices = random.sample(range(N_FILES), N_TEST_FILES)
 #print(sample_indices)
 
@@ -29,3 +33,7 @@ for i in range(N_FILES):
 
 for file in test_files:
 	os.remove(os.path.join(FROM_PATH, file))
+
+print("Number of files:", N_FILES)
+print("Number of test files:", N_TEST_FILES)
+print("Number of training files:", N_FILES-N_TEST_FILES)
