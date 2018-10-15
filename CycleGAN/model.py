@@ -8,6 +8,8 @@ from collections import namedtuple
 from module import *
 from utils import *
 from shutil import copyfile
+import imageio
+from skimage import img_as_ubyte
 
 
 class cyclegan(object):
@@ -169,30 +171,22 @@ class cyclegan(object):
 
                 # Save images for cnr and snr calculations in matlab
                 if epoch % 4 == 0:
-                #print("fname:",fname)
-                #original_path = "org_fnames/" + fname[0] + "_" + fname[1]
-                #pre_path = "pre_fnames/" + fname[0] + "_" + fname[1]
-                #fake_path = "fake_fnames/" + fname[0] + "_" + fname[1]
-
                     path = "../MATLAB/to_matlab/"
-                    original_path = path + "origs_new/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-                    fake_path = path + "fakes_new/epoch_" + str(epoch) + "_img_" + str(counter) + ".png"
-
-                    #path = "C:\\Users\\davwa\\Desktop\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-                    #path = "E:\\david\\CT-image-enhancement\\MATLAB\\to_matlab\\"
-
-                    #fake_path = 'path' + str(counter) + ".png"
+                    original_path = path + "origs_new/epoch_" + str(epoch) + "_img_" + str(counter-1) + ".png"
+                    fake_path = path + "fakes_new/epoch_" + str(epoch) + "_img_" + str(counter-1) + ".png"
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
-                    #print("file_name:", batch_files[0][0])
+                    '''if using bigger batches, make sure to save all images...'''
+                    print("file_name:", batch_files[0][0])
                     copyfile(batch_files[0][0], original_path)
+                    #print("fake_B:",fake_B[0].dtype)
+                    #uint_B = img_as_ubyte(fake_B[0]) #This seems to decrease contrast
+                    #print("new_B:",uint_B.dtype)
+                    imageio.imwrite(fake_path, fake_B[0])
+                    #if counter == 2:
+                        #save_images(new_B, [1, 1], fake_path)
+                        #imsave(new_B, [1, 1], fake_path)
 
-                    #Does not work to save original this way
-                    #print("originalA:",original_A.shape)
-                    #save_images(original_A, [1, 1, 0], original_path)
-
-                    #print("fake_B:",fake_B.shape)
-                    save_images(fake_B, [1, 1], fake_path)
                 ###########################
 
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
