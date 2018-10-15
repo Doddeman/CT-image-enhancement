@@ -74,14 +74,14 @@ cnr2 = 20*cnr;
 %%
 clear all;
 %close all;
-images = dir('P:\Shared\ImagesFromVikas\middle_slices/*.png');
+images = dir('P:\Shared\ImagesFromVikas\middle_slices_dt1/*.png');
 
 SNRvector = zeros(length(images),1);
 CNRvector = zeros(length(images),1);
 for i = 1:length(images)
     i
     name = images(i).name;
-    path = strcat('P:\Shared\ImagesFromVikas\middle_slices/', name);
+    path = strcat('P:\Shared\ImagesFromVikas\middle_slices_dt1/', name);
     %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
     %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
     image = im2double(imread(path));
@@ -149,8 +149,8 @@ CNRmean = mean(CNRvector);
 fitmodel = fit(SNRvector, CNRvector,'poly1')
 %%
 close all;
-p1 = 0.009172;
-p2 = 0.08573;
+p1 = 0.002343;
+p2 = 0.1204;
 goodX = [];
 badX = [];
 goodY = [];
