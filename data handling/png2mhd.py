@@ -3,6 +3,7 @@ import os
 import SimpleITK as sitk
 import numpy as np
 from scipy.misc import imsave
+import imageio
 
 FROM_PATH = "to_png/"
 TO_PATH ="to_mhd/"
@@ -40,7 +41,7 @@ def natural_keys(text):
     http://nedbatchelder.com/blog/200712/human_sorting.html
     (See Toothy's implementation in the comments)
     '''
-    return [ atoi(c) for c in re.split('(\d+)', text) ]
+    return [ atoi(c) for c in re.split('(\\d+)', text) ]
 
 def png_to_mhd(sourceDir, destDir):
     # If the output path doesn't exist, create it
@@ -98,10 +99,26 @@ def png_to_mhd(sourceDir, destDir):
 
         print (mhd.shape)
         #result.append(mhd)
-        imsave(saveFileName, mhd)
+        #imsave(saveFileName, mhd)
+        #imageio.imwrite('filepath', 'image', 'format')
+        #format = ITK
+        #Probably just add ".mhd" to the filepath
+        # See imageio.show_formats()
+        # (there is also DICOM)
         print('Saved {}'.format(saveFileName))
     #print("result:",result)
 
     
 
 print(png_to_mhd(FROM_PATH,TO_PATH))
+
+'''
+import imageio
+dirname = 'path/to/dicom/files'
+
+# Read as loose images
+ims = imageio.mimread(dirname, 'DICOM')
+# Read as volume
+vol = imageio.volread(dirname, 'DICOM')
+# Read multiple volumes (multiple DICOM series)
+vols = imageio.mvolread(dirname, 'DICOM')'''
