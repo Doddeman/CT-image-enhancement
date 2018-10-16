@@ -180,9 +180,11 @@ class cyclegan(object):
                     print("file_name:", batch_files[0][0])
                     copyfile(batch_files[0][0], original_path)
                     #print("fake_B:",fake_B[0].dtype)
+                    #print("fake_B:",fake_B[0].shape)
                     #uint_B = img_as_ubyte(fake_B[0]) #This seems to decrease contrast
                     #print("new_B:",uint_B.dtype)
-                    imageio.imwrite(fake_path, fake_B[0])
+                    #imageio.imwrite(fake_path, fake_B[0])
+                    scipy.misc.imsave(fake_path, fake_B[0])
                     #if counter == 2:
                         #save_images(new_B, [1, 1], fake_path)
                         #imsave(new_B, [1, 1], fake_path)
