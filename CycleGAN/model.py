@@ -171,31 +171,29 @@ class cyclegan(object):
                 #########################
 
                 # Save images for cnr and snr calculations in matlab
-                #if epoch % 4 == 0:
-                path = "../MATLAB/to_matlab/"
-                for i in range(len(batch_files)):
-                    #print("i:",i)
-                    original_path = path + "origs_batch8/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
-                    fake_path = path + "fakes_batch8/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
-                    #print("original_path", original_path)
-                    #print("fake_path:", fake_path)
-                    #print("file_name:", batch_files[i][0])
-                    copyfile(batch_files[i][0], original_path)
-                    #print("fake_B[i]:",fake_B[i].shape)
-                    resh = np.reshape(fake_B[i], (256, 256))
-                    #print("r:",r.shape)
-                    scipy.misc.imsave(fake_path, resh)
+                if epoch % 4 == 0:
+                    path = "../MATLAB/to_matlab/"
+                    for i in range(len(batch_files)):
+                        #print("i:",i)
+                        original_path = path + "origs_batch8/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
+                        fake_path = path + "fakes_batch8/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
+                        #print("original_path", original_path)
+                        #print("fake_path:", fake_path)
+                        print("file_name:", batch_files[i][0])
+                        copyfile(batch_files[i][0], original_path)
+                        #print("fake_B[i]:",fake_B[i].shape)
+                        resh = np.reshape(fake_B[i], (256, 256))
+                        #print("r:",r.shape)
+                        scipy.misc.imsave(fake_path, resh)
 
-                    batch_counter += 1;
+                        batch_counter += 1;
 
-                    #uint_B = img_as_ubyte(fake_B[0]) #This seems to decrease contrast
-                    #print("new_B:",uint_B.dtype)
-                    #imageio.imwrite(fake_path, fake_B[0])
-                    #if counter == 2:
-                        #save_images(new_B, [1, 1], fake_path)
-                        #imsave(new_B, [1, 1], fake_path)
-
-
+                        #uint_B = img_as_ubyte(fake_B[0]) #This seems to decrease contrast
+                        #print("new_B:",uint_B.dtype)
+                        #imageio.imwrite(fake_path, fake_B[0])
+                        #if counter == 2:
+                            #save_images(new_B, [1, 1], fake_path)
+                            #imsave(new_B, [1, 1], fake_path)
 
                 ###########################
 
