@@ -8,9 +8,6 @@ from collections import namedtuple
 from module import *
 from utils import *
 from shutil import copyfile
-#import imageio
-#from skimage import img_as_ubyte
-
 
 class cyclegan(object):
     def __init__(self, sess, args):
@@ -176,8 +173,8 @@ class cyclegan(object):
                     path = "../MATLAB/to_matlab/"
                     for i in range(len(batch_files)):
                         #print("i:",i)
-                        original_path = path + "origs_batch8/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
-                        fake_path = path + "fakes_batch8/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
+                        original_path = path + "origs_batch8-2/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
+                        fake_path = path + "fakes_batch8-2/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
                         #print("original_path", original_path)
                         #print("fake_path:", fake_path)
                         #print("file_name:", batch_files[i][0])
@@ -187,10 +184,6 @@ class cyclegan(object):
                         #print("r:",r.shape)
                         scipy.misc.imsave(fake_path, resh)
                         batch_counter += 1;
-
-                        #uint_B = img_as_ubyte(fake_B[0]) #This seems to decrease contrast
-                        #print("new_B:",uint_B.dtype)
-                        #imageio.imwrite(fake_path, fake_B[0])
 
                         #save_images(new_B, [1, 1], fake_path)
                         #imsave(new_B, [1, 1], fake_path)

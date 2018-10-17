@@ -193,3 +193,9 @@ plot(PSNRvector);
 title('PSNR')
 xlabel('Epoch')
 ylabel('CNR difference')
+
+%%
+%Save workspace
+%total_epochs = 30;
+%saved_every = 1;
+%save('', 'SNRvector', 'CNRvector', 'PSNRvector', 'total_epochs', 'saved_every')
