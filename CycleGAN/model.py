@@ -172,6 +172,7 @@ class cyclegan(object):
 
                 # Save images for cnr and snr calculations in matlab
                 if epoch % 4 == 0:
+                    print("idx:", idx)
                     path = "../MATLAB/to_matlab/"
                     for i in range(len(batch_files)):
                         #print("i:",i)
@@ -179,21 +180,20 @@ class cyclegan(object):
                         fake_path = path + "fakes_batch8/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
                         #print("original_path", original_path)
                         #print("fake_path:", fake_path)
-                        print("file_name:", batch_files[i][0])
+                        #print("file_name:", batch_files[i][0])
                         copyfile(batch_files[i][0], original_path)
                         #print("fake_B[i]:",fake_B[i].shape)
                         resh = np.reshape(fake_B[i], (256, 256))
                         #print("r:",r.shape)
                         scipy.misc.imsave(fake_path, resh)
-
                         batch_counter += 1;
 
                         #uint_B = img_as_ubyte(fake_B[0]) #This seems to decrease contrast
                         #print("new_B:",uint_B.dtype)
                         #imageio.imwrite(fake_path, fake_B[0])
-                        #if counter == 2:
-                            #save_images(new_B, [1, 1], fake_path)
-                            #imsave(new_B, [1, 1], fake_path)
+
+                        #save_images(new_B, [1, 1], fake_path)
+                        #imsave(new_B, [1, 1], fake_path)
 
                 ###########################
 

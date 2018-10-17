@@ -9,26 +9,23 @@
 
 %%
 %%%%%%%%%%%%% MASKING OUT THE ROI, adding to ROI folder%%%%%%%%%%%
-images = dir('../fifty/*.png');
-for i=1:length(images)
+images = dir('..//*.png');
+L = length(images);
+for i=1:L
     i
     name = images(i).name;
-    path = strcat('../fifty/', name);
+    path = strcat('..//', name);
     image = imread(path);
+    %image = im2double(imread(path));
     
     [height,width] = size(image);
     c = centerOfMass(image);
     centerX = round(c(2));
     centerY = round(c(1));
     
-    mask = uint8(zeros(height, width));
-    if height < 130 && width < 130 && height ~= width
-        maskSizeX = 50;
-        maskSizeY = 40;
-    else
-        maskSizeX = round(width/5);
-        maskSizeY = round(height/7);
-    end
+    mask = zeros(height, width);
+    maskSizeX = round(width/4);
+    maskSizeY = round(height/4);
     mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
     masked = image .* mask;
     masked = masked(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX); % CUT OUT THE MASK SIZE OUT OF THE NEW IMAGE
