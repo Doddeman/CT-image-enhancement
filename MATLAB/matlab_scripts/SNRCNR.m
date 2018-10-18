@@ -1,10 +1,10 @@
 %%%%%%%%%%%%%% INITIATE DATA STRUCTURES %%%%%%%%%%%%
 
-clear all
+%clear all
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_batch8/*.png');
+%originals = dir('../to_matlab/origs_terrible/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -15,7 +15,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes_batch8/*.png');
+fakes = dir('../to_matlab/fakes_terrible/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -26,51 +26,67 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 fakes = cell2struct(cells, fields, 1);
 
-if length(originals) ~= length(fakes)
+L1 = length(originals);
+L2 = length(originals);
+
+if L1 ~= L2
     disp('Not same length of directories');
     disp('Terminating script');
     return
 end
 
-L = length(originals);
+%check for errors
+for i = 1:L1
+    i
+    orig = originals(i).name;
+    orig = strsplit(orig,'_');
+    n1 = orig{4};
+    fak = fakes(i).name;
+    fak = strsplit(fak,'_');
+    n2 = fak{4};
+    if ~strcmp(n1,n2)
+        disp('Not same image!!!');
+        return
+    end
+end
+
 
 %%%%% Testing
 %% 
 n = 1000;
 figure(80)
-original = originals(n).name;
-originalPath = strcat('../to_matlab/origs_batch8/', original)
+original = originals(n).name
+originalPath = strcat('../to_matlab/origs_terrible/', original);
 imshow(originalPath)
 
 figure(81)
-fake = fakes(n).name;
-fakepath = strcat('../to_matlab/fakes_batch8/', fake)
+fake = fakes(n).name
+fakepath = strcat('../to_matlab/fakes_terrible/', fake);
 imshow(fakepath)
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
-%images_per_epoch = 1478;
+images_per_epoch = 1478;
 %images_per_epoch = 12628;
-images_per_epoch = 12624;
+%images_per_epoch = 12624;
 % number of epochs that produced images
-n_of_epochs = floor(L/images_per_epoch);
+n_of_epochs = floor(L1/images_per_epoch);
 
-PSNRvector = zeros(n_of_epochs,1);
 SNRvector = zeros(n_of_epochs,1);
 CNRvector = zeros(n_of_epochs,1);
-epochPSNR = 0;
 epochSNR = 0;
 epochCNR = 0;
 
 epoch = 1;
-for i = 1:L
+for i = 1:L1
     i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/origs_batch8/', originalName);
-    %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
-    %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
+    originalPath = strcat('../to_matlab/origs_terrible/', originalName);
     original = im2double(imread(originalPath));
+    original = imresize(original,[256,256]);
+    original(original<0) = 0;
+    %nes1 = sum(original(:) < 0)
 
     %Get original ROI
     [origHeight,origWidth] = size(original);
@@ -100,11 +116,11 @@ for i = 1:L
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes_batch8/', fakeName);
-    %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
-    %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
+    fakePath = strcat('../to_matlab/fakes_terrible/', fakeName);
     fake = im2double(imread(fakePath));
-    %fake = rgb2gray(fake);
+    fake = rgb2gray(fake);
+    %fake(fake<0) = 0;
+    %nes2 = sum(fake(:) < 0)
 
     %Get fake ROI
     [fakeHeight,fakeWidth] = size(fake);
@@ -121,12 +137,12 @@ for i = 1:L
 
     fakeMeanROI = mean(mean(fakeROI));
 
-    %originalSNR = originalMeanROI / originalStdBackground;
+    originalSNR = originalMeanROI / originalStdBackground;
     originalCNR = originalMeanROI - originalMeanBackground;
-    %fakeSNR = fakeMeanROI / originalStdBackground;
+    fakeSNR = fakeMeanROI / originalStdBackground;
     fakeCNR = fakeMeanROI - originalMeanBackground;
 
-    %SNRdifference = fakeSNR - originalSNR;
+    SNRdifference = fakeSNR - originalSNR;
     CNRdifference = fakeCNR - originalCNR;
  
     %Weird SNR, should be 10log10
@@ -141,35 +157,19 @@ for i = 1:L
 %     end
 %     snr = nominator/denominator; 
     
-    %PSNR
-%     peak = max(max(fake))^2;
-%     denominator = (sum(sum(fake))-sum(sum(original)))^2;
-%     denominator = denominator/(origHeight*origWidth*fakeHeight*fakeWidth);
-    %nindices = find(original<0);
-    %nvalues = original(nindices);
-%     nofindices1 = length(find(fake<0));
-%     
-%     nofindices2 = length(find(original<0));
-    
-    [peaksnr, snr] = psnr(fake,original);
 
-    epochPSNR = epochPSNR + peaksnr;
-    epochSNR = epochSNR + snr;
+    epochSNR = epochSNR + SNRdifference;
     epochCNR = epochCNR + CNRdifference;
 
     % End of epoch?
     if mod(i,images_per_epoch) == 0
         %i
-        meanPSNR = epochPSNR / images_per_epoch;
         meanSNR = epochSNR / images_per_epoch;
         meanCNR = epochCNR / images_per_epoch;
-        PSNRvector(epoch) = meanPSNR;
         SNRvector(epoch) = meanSNR;
         CNRvector(epoch) = meanCNR;
-        epochPSNR = 0;
         epochSNR = 0;
         epochCNR = 0;
-
         epoch = epoch + 1;
     end
 end
@@ -188,14 +188,8 @@ title('CNR improvement')
 xlabel('Epoch')
 ylabel('CNR difference')
 
-figure(3)
-plot(PSNRvector);
-title('PSNR')
-xlabel('Epoch')
-ylabel('CNR difference')
-
 %%
 %Save workspace
 %total_epochs = 30;
 %saved_every = 1;
-%save('', 'SNRvector', 'CNRvector', 'PSNRvector', 'total_epochs', 'saved_every')
+%save('', 'SNRvector', 'CNRvector', 'total_epochs', 'saved_every')
