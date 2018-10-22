@@ -165,34 +165,29 @@ class cyclegan(object):
                     [self.fake_A, self.fake_B, self.g_optim, self.g_sum],
                     feed_dict={self.real_data: batch_images, self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
+                
                 #########################
-
                 # Save images for cnr and snr calculations in matlab
                 if epoch % 4 == 0:
-                    print("saving images", idx)
+                    print("saving batch", idx)
                     path = "../MATLAB/to_matlab/"
                     for i in range(len(batch_files)):
-                        #print("i:",i)
-                        original_path = path + "origs_batch4/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
-                        fake_path = path + "fakes_batch4/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
+                        print(i, batch_files[i][0])
+                        file_name = batch_files[i][0].rsplit("\\", 1)
+                        file_name = file_name[1]
+                        #print("fn:", file_name)
+                        original_path = path + "origs_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                        fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                         #print("original_path", original_path)
                         #print("fake_path:", fake_path)
-                        #print("file_name:", batch_files[i][0])
                         copyfile(batch_files[i][0], original_path)
                         #print("fake_B[i]:",fake_B[i].shape)
                         resh = np.reshape(fake_B[i], (256, 256))
-                        #print("r:",r.shape)
                         scipy.misc.imsave(fake_path, resh)
-                        batch_counter += 1;
-
-                        #save_images(new_B, [1, 1], fake_path)
-                        #imsave(new_B, [1, 1], fake_path)
-
+                        batch_counter += 1
                 ###########################
 
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
-
-
 
                 # Update D network
                 _, summary_str = self.sess.run(
