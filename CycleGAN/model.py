@@ -169,12 +169,12 @@ class cyclegan(object):
 
                 # Save images for cnr and snr calculations in matlab
                 if epoch % 4 == 0:
-                    print("idx:", idx)
+                    print("saving images", idx)
                     path = "../MATLAB/to_matlab/"
                     for i in range(len(batch_files)):
                         #print("i:",i)
-                        original_path = path + "origs_batch8-2/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
-                        fake_path = path + "fakes_batch8-2/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
+                        original_path = path + "origs_batch4/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
+                        fake_path = path + "fakes_batch4/epoch_" + str(epoch) + "_img_" + str(batch_counter) + ".png"
                         #print("original_path", original_path)
                         #print("fake_path:", fake_path)
                         #print("file_name:", batch_files[i][0])

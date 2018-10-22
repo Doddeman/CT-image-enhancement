@@ -3,7 +3,7 @@
 clear all
 close all
 
-images = dir('P:\Shared\ImagesFromVikas\NewData/*.png');
+images = dir('E:\david\DataForDavid1/*.png');
 L = length(images);
 % Create vector with all the patients+time frames
 all_images = [];
@@ -12,9 +12,10 @@ for i=1:L
    name = images(i).name;
    name = strsplit(name,'_');
    patient = name{1};
-   time_frame = name{2};
-   patient_tf = strcat(patient, '_', time_frame);
-   all_images = [all_images,patient_tf,','];
+   patient = strcat(patient, '_dt1');
+   %time_frame = name{2};
+   %patient_tf = strcat(patient, '_', time_frame);
+   all_images = [all_images,patient,','];
 end
 all_images = all_images(1:length(all_images)-1); %cut away last ','
 all_patients = strsplit(all_images,','); %split into cells
@@ -55,8 +56,9 @@ patients = unique(all_patients);
 
 
 %%
-% Current method for choosing of middle slices for NewData
-path = 'P:\Shared\ImagesFromVikas\NewData/';
+% Current method for choosing of middle slices for new data, dt1
+% do this by hand...
+path = 'E:\david\DataForDavid1/';
 chosen_images = [];
 for i = 1:length(patients)
     i
