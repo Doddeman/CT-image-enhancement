@@ -134,3 +134,10 @@ def transform(image, npx=64, is_crop=True, resize_w=64):
 
 def inverse_transform(images):
     return (images+1.)/2.
+
+#Experiment. Adding it to cost
+def signaltonoise(a, axis=None,ddof=0):    
+    a = np.asanyarray(a)
+    m = a.mean(axis)
+    sd = a.std(axis=axis, ddof=ddof)
+    return np.where(sd == 0, 0, m/sd)
