@@ -40,6 +40,7 @@ class cyclegan(object):
         self.pool = ImagePool(args.max_size)
 
     def _build_model(self):
+        print("Building model")
         self.real_data = tf.placeholder(tf.float32,
                                         [None, self.image_size, self.image_size,
                                          self.input_c_dim + self.output_c_dim],
@@ -88,7 +89,7 @@ class cyclegan(object):
         self.g_loss_a2b_sum = tf.summary.scalar("g_loss_a2b", self.g_loss_a2b)
         self.g_loss_b2a_sum = tf.summary.scalar("g_loss_b2a", self.g_loss_b2a)
         self.g_loss_sum = tf.summary.scalar("g_loss", self.g_loss)
-        self.g_sum = tf.summary.merge([self.g_loss_a2b_sum, self.g_loss_b2a_sum, self.g_loss_sum])
+        self.g_sum = tf.summary.merge([self.g_loss_sum])
         self.db_loss_sum = tf.summary.scalar("db_loss", self.db_loss)
         self.da_loss_sum = tf.summary.scalar("da_loss", self.da_loss)
         self.d_loss_sum = tf.summary.scalar("d_loss", self.d_loss)
@@ -97,9 +98,7 @@ class cyclegan(object):
         self.da_loss_real_sum = tf.summary.scalar("da_loss_real", self.da_loss_real)
         self.da_loss_fake_sum = tf.summary.scalar("da_loss_fake", self.da_loss_fake)
         self.d_sum = tf.summary.merge(
-            [self.da_loss_sum, self.da_loss_real_sum, self.da_loss_fake_sum,
-             self.db_loss_sum, self.db_loss_real_sum, self.db_loss_fake_sum,
-             self.d_loss_sum]
+            [self.d_loss_sum]
         )
 
         self.test_A = tf.placeholder(tf.float32,
@@ -114,7 +113,7 @@ class cyclegan(object):
         t_vars = tf.trainable_variables()
         self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
         self.g_vars = [var for var in t_vars if 'generator' in var.name]
-        for var in t_vars: print(var.name)
+        #for var in t_vars: print(var.name)
 
     def train(self, args):
         """Train cyclegan"""
@@ -126,7 +125,7 @@ class cyclegan(object):
 
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
-        self.writer = tf.summary.FileWriter("./logs", self.sess.graph)
+        self.writer = tf.summary.FileWriter("./events/d32", self.sess.graph)
 
         counter = 1
         batch_counter = 0; # for saving images
@@ -161,14 +160,13 @@ class cyclegan(object):
                 batch_images = np.array(batch_images).astype(np.float32)
 
                 # Update G network and record fake outputs
-                fake_A, fake_B, _, summary_str = self.sess.run(
-                    [self.fake_A, self.fake_B, self.g_optim, self.g_sum],
+                fake_A, fake_B, _, summary_str, g_loss = self.sess.run(
+                    [self.fake_A, self.fake_B, self.g_optim, self.g_sum, self.g_loss],
                     feed_dict={self.real_data: batch_images, self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
-                
                 #########################
                 # Save images for cnr and snr calculations in matlab
-                if epoch % 4 == 0:
+                '''if epoch % 4 == 0:
                     print("saving batch", idx)
                     path = "../MATLAB/to_matlab/"
                     for i in range(len(batch_files)):
@@ -184,30 +182,31 @@ class cyclegan(object):
                         #print("fake_B[i]:",fake_B[i].shape)
                         resh = np.reshape(fake_B[i], (256, 256))
                         scipy.misc.imsave(fake_path, resh)
-                        batch_counter += 1
+                        batch_counter += 1'''
+
+                snr = signaltonoise(fake_B)
+                print("SNR:",snr)
                 ###########################
 
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Update D network
-                _, summary_str = self.sess.run(
-                    [self.d_optim, self.d_sum],
+                _, summary_str, d_loss = self.sess.run(
+                    [self.d_optim, self.d_sum, self.d_loss],
                     feed_dict={self.real_data: batch_images,
                                self.fake_A_sample: fake_A,
                                self.fake_B_sample: fake_B,
                                self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
+                
+                print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
-                counter += 1
-                print(("Epoch: [%2d] [%4d/%4d] time: %4.4f" % (
-                    epoch, idx, batch_idxs, time.time() - start_time)))
-
-                #Try to print loss...
-                #print("discriminator loss?:", self.d_loss)
-                #print("generator loss?:", self.g_loss)
+                counter += 1        
 
                 if np.mod(counter, args.print_freq) == 1:
                     self.sample_model(args.sample_dir, epoch, idx)
+                    print(("Epoch: [%2d] [%4d/%4d] time: %4.4f" % (
+                        epoch, idx, batch_idxs, time.time() - start_time)))     
 
                 if np.mod(counter, args.save_freq) == 2:
                     self.save(args.checkpoint_dir, counter)
