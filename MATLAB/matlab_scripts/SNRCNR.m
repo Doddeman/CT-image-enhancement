@@ -4,7 +4,7 @@
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_batch4/*.png');
+originals = dir('../to_matlab/origs_batch8/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -15,7 +15,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes_batch4/*.png');
+fakes = dir('../to_matlab/fakes_batch8/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -27,7 +27,7 @@ cells = reshape(cells', sz);
 fakes = cell2struct(cells, fields, 1);
 
 L1 = length(originals);
-L2 = length(originals);
+L2 = length(fakes);
 
 if L1 ~= L2
     disp('Not same length of directories');
@@ -53,24 +53,23 @@ end
 
 %%%%% Testing
 %% 
-n = 200000;
+n = 50000;
 figure(80)
 original = originals(n).name
-originalPath = strcat('../to_matlab/origs_batch4/', original);
+originalPath = strcat('../to_matlab/origs_batch8/', original);
 imshow(originalPath)
 
 figure(81)
 fake = fakes(n).name
-fakepath = strcat('../to_matlab/fakes_batch4/', fake);
+fakepath = strcat('../to_matlab/fakes_batch8/', fake);
 imshow(fakepath)
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
 %images_per_epoch = 1478;
-images_per_epoch = 12628;
-%images_per_epoch = 12624;
-% number of epochs that produced images
-n_of_epochs = floor(L1/images_per_epoch);
+%images_per_epoch = 12628;
+images_per_epoch = 12624;
+n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
 
 SNRvector = zeros(n_of_epochs,1);
 CNRvector = zeros(n_of_epochs,1);
@@ -78,11 +77,13 @@ epochSNR = 0;
 epochCNR = 0;
 
 epoch = 1;
+epochVector = zeros(n_of_epochs, 1); %For visualizing data more clearly
+saved_every = 4; %data sampled every X:th epoch
 for i = 1:L1
     i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/origs_batch4/', originalName);
+    originalPath = strcat('../to_matlab/origs_batch8/', originalName);
     original = im2double(imread(originalPath));
     original = imresize(original,[256,256]);
     original(original<0) = 0;
@@ -101,7 +102,7 @@ for i = 1:L1
     maskedImage = original .* mask;
     originalROI = maskedImage(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX);
 
-    %Get original background
+    %Get original background.
     %Values in image range from 0 to 1, so by assigning the values
     %of ROI to 2, the background can be found
     original(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
@@ -116,11 +117,9 @@ for i = 1:L1
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes_batch4/', fakeName);
+    fakePath = strcat('../to_matlab/fakes_batch8/', fakeName);
     fake = im2double(imread(fakePath));
     %fake = rgb2gray(fake);
-    %fake(fake<0) = 0;
-    %nes2 = sum(fake(:) < 0)
 
     %Get fake ROI
     [fakeHeight,fakeWidth] = size(fake);
@@ -170,12 +169,17 @@ for i = 1:L1
         CNRvector(epoch) = meanCNR;
         epochSNR = 0;
         epochCNR = 0;
-        epoch = epoch + 1;
+        epochVector(epoch) = epoch-1;
+        epoch = epoch + saved_every;
     end
 end
 
 %%%%%%%%%%%%%% PLOT RESULTS %%%%%%%%%%%%
 %%
+
+SNRvector(SNRvector==0) = NaN;
+CNRvector(CNRvector==0) = NaN;
+
 figure(3)
 plot(SNRvector);
 title('SNR improvement')
@@ -190,6 +194,5 @@ ylabel('CNR difference')
 
 %%
 %Save workspace
-total_epochs = 61;
-saved_every = 4;
-save('batch4_61epochs', 'SNRvector', 'CNRvector', 'total_epochs', 'saved_every')
+total_epochs = 17;
+save('batch8_17epochs', 'SNRvector', 'CNRvector', 'epochVector', 'total_epochs', 'saved_every')
