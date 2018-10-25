@@ -9,14 +9,14 @@
 
 %%
 %%%%%%%%%%%%% MASKING OUT THE ROI, adding to ROI folder%%%%%%%%%%%
-images = dir('..//*.png');
+images = dir('clean/*.png');
 L = length(images);
-for i=1:L
+for i=1:92
     i
     name = images(i).name;
-    path = strcat('..//', name);
+    path = strcat('clean/', name);
     image = imread(path);
-    %image = im2double(imread(path));
+    image = im2double(imread(path));
     
     [height,width] = size(image);
     c = centerOfMass(image);
@@ -30,6 +30,20 @@ for i=1:L
     masked = image .* mask;
     masked = masked(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX); % CUT OUT THE MASK SIZE OUT OF THE NEW IMAGE
     
+    zeromask = ones(height, width);
+    zeromask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 0;
+    background = image .* zeromask;
+    
+    figure(1)
+    imshow(image);
+
+    figure(2)
+    imshow(masked);
+    
+    figure(3)
+    imshow(background);
+    
     %newname = strcat('ROI_', name);
     %imwrite(masked, newname);
 end
+
