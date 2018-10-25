@@ -174,22 +174,36 @@ for i = 1:L1
     end
 end
 
+%%%%%%%%%%%%%% GET TRENDS %%%%%%%%%%%%
+%%
+x = ones(length(SNRvector),1);
+for i = 1:length(x)
+    x(i) = i;
+end
+SNRtrend = fit(x,SNRvector,'poly2')
+CNRtrend = fit(x,CNRvector,'poly2')
+
 %%%%%%%%%%%%%% PLOT RESULTS %%%%%%%%%%%%
 %%
+close all
 
-SNRvector(SNRvector==0) = NaN;
-CNRvector(CNRvector==0) = NaN;
+% SNRvector(SNRvector==0) = NaN;
+% CNRvector(CNRvector==0) = NaN;
 
-figure(3)
+figure(1)
 plot(SNRvector);
-title('SNR improvement')
-xlabel('Epoch')
+hold on
+plot(SNRtrend, x, SNRvector);
+title('SNR Progression')
+xlabel('Every 4:th epoch')
 ylabel('SNR difference')
 
-figure(4)
+figure(2)
 plot(CNRvector);
-title('CNR improvement')
-xlabel('Epoch')
+hold on
+plot(CNRtrend, x, CNRvector);
+title('CNR Progression')
+xlabel('Every 4:th epoch')
 ylabel('CNR difference')
 
 %%
