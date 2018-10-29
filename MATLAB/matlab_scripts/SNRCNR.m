@@ -71,10 +71,13 @@ imshow(fakepath)
 images_per_epoch = 12624;
 n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
 
+
 SNRvector = zeros(n_of_epochs,1);
 CNRvector = zeros(n_of_epochs,1);
+roiSNRvector = zeros(n_of_epochs,1);
 epochSNR = 0;
 epochCNR = 0;
+epochSNRroi = 0;
 
 epoch = 1;
 epochVector = zeros(n_of_epochs, 1); %For visualizing data more clearly
@@ -87,7 +90,6 @@ for i = 1:L1
     original = im2double(imread(originalPath));
     original = imresize(original,[256,256]);
     original(original<0) = 0;
-    %nes1 = sum(original(:) < 0)
 
     %Get original ROI
     [origHeight,origWidth] = size(original);
@@ -111,6 +113,7 @@ for i = 1:L1
     backgroundValues = original(backgroundIndices);
    
     originalMeanROI = mean(mean(originalROI));
+    originalStdROI = std(std(originalROI));
     %Add 1 to normalize over number of pixels
     originalStdBackground = std(backgroundValues, 1);
     originalMeanBackground = mean(backgroundValues);
@@ -133,42 +136,36 @@ for i = 1:L1
     mask(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 1;
     maskedImage = fake .* mask;
     fakeROI = maskedImage(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX);
-
     fakeMeanROI = mean(mean(fakeROI));
+    fakeStdROI = std(std(fakeROI));
 
     originalSNR = originalMeanROI / originalStdBackground;
-    originalCNR = originalMeanROI - originalMeanBackground;
     fakeSNR = fakeMeanROI / originalStdBackground;
-    fakeCNR = fakeMeanROI - originalMeanBackground;
-
-    SNRdifference = fakeSNR - originalSNR;
-    CNRdifference = fakeCNR - originalCNR;
- 
-    %Weird SNR, should be 10log10
-%     n_of_pixels = origHeight*origWidth;
-%     nominator = 0;
-%     denominator = 0;
-%     for j = 1:n_of_pixels 
-%         curr = original(j)^2;
-%         curr2 = (original(j)-fake(j))^2;
-%         nominator = nominator + curr;
-%         denominator = denominator + curr2;
-%     end
-%     snr = nominator/denominator; 
+    SNRdifference = fakeSNR / originalSNR;
     
+    originalCNR = originalMeanROI - originalMeanBackground;
+    fakeCNR = fakeMeanROI - originalMeanBackground;
+    CNRdifference = fakeCNR / originalCNR;
+    
+    originalSNRroi = originalMeanROI / originalStdROI;
+    fakeSNRroi = fakeMeanROI / fakeStdROI;
+    roiSNRdiff = fakeSNRroi / originalSNRroi;
 
     epochSNR = epochSNR + SNRdifference;
     epochCNR = epochCNR + CNRdifference;
+    epochSNRroi = epochSNRroi + roiSNRdiff;
 
-    % End of epoch?
-    if mod(i,images_per_epoch) == 0
+    if mod(i,images_per_epoch) == 0 % End of epoch?
         %i
         meanSNR = epochSNR / images_per_epoch;
         meanCNR = epochCNR / images_per_epoch;
+        meanSNRroi = epochSNRroi / images_per_epoch;
         SNRvector(epoch) = meanSNR;
         CNRvector(epoch) = meanCNR;
+        roiSNRvector(epoch) = meanSNRroi;
         epochSNR = 0;
         epochCNR = 0;
+        epochSNRroi = 0;
         epochVector(epoch) = epoch-1;
         epoch = epoch + saved_every;
     end
