@@ -1,4 +1,4 @@
-%% Remove images not containing ventricles %%%
+%% Remove images containing a lot of dark background %%%
 
 %path = strcat('../PNG_Images_AC/', 'H12_T1_S14.png')
 %image = imread(path);
