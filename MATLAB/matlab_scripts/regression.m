@@ -1,10 +1,11 @@
 % This code calculates the SNR and CNR of images and 
-% plots them against each other. It then performs a 
-% regression (linear right now) to make an estimation 
-% of which images have high quality and which have low.
+% plots them to classify into high and low quality.
 % Works best if the images have been sampled beforehand.
 % Use the sampling script to get middle slices for patients
 
+
+%%%%%%%%% SECTION FOR TESTING CALCULATIONS %%%%%%%%%%%%%%
+%%
 clear all
 %close all
 
@@ -71,19 +72,18 @@ cnr2 = 20*cnr;
 %cnr = meanROI-sdBackground;
 
 
+%%%%%%%%%%%%% CALCULATE SNR AND CNR %%%%%%%%%%%%%%%%%%%%%
 %%
 clear all;
 %close all;
-images = dir('P:\Shared\ImagesFromVikas\middle_slices_dt1/*.png');
-
+images = dir('E:\david\middle_slices/*.png');
+L = length(images);
 SNRvector = zeros(length(images),1);
 CNRvector = zeros(length(images),1);
-for i = 1:length(images)
+for i = 1:L
     i
     name = images(i).name;
-    path = strcat('P:\Shared\ImagesFromVikas\middle_slices_dt1/', name);
-    %path = strcat('E:\david\development\MATLAB\to_matlab/', name);
-    %path = strcat('C:\Users\davwa\Desktop\Exjobb\Development\MATLAB\to_matlab/', name);
+    path = strcat('E:\david\middle_slices/', name);
     image = im2double(imread(path));
     %image = rgb2gray(image);
     [height,width] = size(image);
@@ -106,44 +106,61 @@ for i = 1:length(images)
     backgroundValues = image(backgroundIndices);
 
     meanROI = mean(mean(maskedImage));
-    %sdROI = std(std(masked));
     sdBackground = std(backgroundValues);
     meanBackground = mean(backgroundValues);
 
-    signal = meanROI;
-    noise = sdBackground;
-    snr = signal/noise;
+    snr = meanROI/sdBackground;
     cnr = meanROI-meanBackground;
-    
-    %contrast = meanROI-meanBackground;
-    %c = contrast/noise;
- 
     SNRvector(i) = snr;
     CNRvector(i) = cnr;
 end
 
 %%
 
-figure(58)
-imshow(image);
+% figure(58)
+% imshow(image);
 
-figure(59)
-plot(SNRvector);                                      
+figure(1)
+plot(SNRvector,'*');                                      
 title('SNR')
 xlabel('Samples')
 ylabel('SNR')
 
-figure(69)
-plot(CNRvector);
+figure(2)
+hist(SNRvector);
+title('SNR hist')
+xlabel('SNR')
+ylabel('Samples')
+
+figure(3)
+boxplot(SNRvector);
+title('SNR box')
+
+figure(4)
+plot(CNRvector,'*');
 title('CNR')
 xlabel('Samples')
 ylabel('CNR')
 
+figure(5)
+hist(CNRvector);
+title('CNR hist')
+xlabel('CNR')
+ylabel('Samples')
 
-SNRmean = mean(SNRvector);
-CNRmean = mean(CNRvector);
+figure(6)
+boxplot(CNRvector);
+title('CNR box')
 
+% SNRmean = mean(SNRvector);
+% CNRmean = mean(CNRvector);
 
+%%%%%%%%%%%% FIND 30% LARGEST %%%%%%%%%%%%%
+%%
+top = round(L*0.3);
+[snr_top, snr_top_i] = maxk(SNRvector, top);
+[cnr_top, cnr_top_i] = maxk(CNRvector, top);
+toptop = intersect(snr_top_i,cnr_top_i);
 %%
 
 fitmodel = fit(SNRvector, CNRvector,'poly1')

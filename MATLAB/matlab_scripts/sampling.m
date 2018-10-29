@@ -3,86 +3,57 @@
 clear all
 close all
 
-images = dir('E:\david\DataForDavid1/*.png');
+images = dir('E:\david\R_data/*.png');
 L = length(images);
 % Create vector with all the patients+time frames
 all_images = [];
+% hej = [];
 for i=1:L
    i
    name = images(i).name;
    name = strsplit(name,'_');
    patient = name{1};
-   patient = strcat(patient, '_dt1');
-   %time_frame = name{2};
-   %patient_tf = strcat(patient, '_', time_frame);
-   all_images = [all_images,patient,','];
+   time_frame = name{2};
+   patient_tf = strcat(patient, '_', time_frame);
+   all_images = [all_images,patient_tf,','];
+   hej = [hej, patient,','];
 end
 all_images = all_images(1:length(all_images)-1); %cut away last ','
 all_patients = strsplit(all_images,','); %split into cells
-patients = unique(all_patients);
+unique_patients = unique(all_patients)';
+% hej = strsplit(hej,',');
+% hej = unique(hej)';
 
 
 %%
-% old algorithm for choosing middle slices
-% % Create vector with chosen indices
-% image_indices = [];
-% image_names = [];
-% numbers = [];
-% current_indice = 0;
-% for i=1:length(patients)
-% %     i
-%     patient = patients{i};
-%     patient = strcat(patient,',');
-%     if patient(1:1) == 'H'
-%         specific_indice = 90;
-%     elseif patient(1:2) == 'T3'
-%         specific_indice = 112;
-%     else
-%         number = count(all_images, patient);
-%         numbers = [numbers, number];
-%         specific_indice = round(number/2);
-%     end
-% 
-%     char_indice = num2str(specific_indice);
-%     patient = patient(1:length(patient)-1);
-%     image_name = strcat(patient,'_T1_S',char_indice);
-%     image_names = [image_names,image_name,','];
-% %     actual_indice = current_indice + specific_indice;
-% %     image_indices = [image_indices, actual_indice];
-% %     current_indice = current_indice + number;
-% end
-% fifty_images = image_names(1:length(image_names)-1); %cut away last ','
-% fifty_patients = strsplit(fifty_images,',');
-
-
-%%
-% Current method for choosing of middle slices for new data, dt1
+% Current method for choosing of middle slices for new data
 % do this by hand...
-path = 'E:\david\DataForDavid1/';
 chosen_images = [];
-for i = 1:length(patients)
+for i = 1:length(unique_patients)
     i
-    current = patients{i};
-    if current(1:2) == 'R4'
-        slice = '300';
-    elseif current(1:2) == 'R5'
+    current = unique_patients{i};
+    cut = strsplit(current, '_');
+    patient = cut{1};
+    time_frame = cut{2};
+
+    if strcmp(patient, 'R3') | strcmp(patient, 'R5') | strcmp(patient, 'R8') | strcmp(patient, 'R10')
         slice = '95';
-    elseif current(1:2) == 'R6' | current(1:2) == 'R7' 
+    elseif strcmp(patient, 'R6') | strcmp(patient, 'R7') | strcmp(patient, 'R11')
         slice = '117';
-    elseif current(1:2) == 'R9'
+    elseif strcmp(patient, 'R9')
         slice = '85';
-    elseif current(1:3) == 'R25'
+    elseif strcmp(patient, 'R25')
         slice = '40';
-    elseif current(1:3) == 'R27'
+    elseif strcmp(patient, 'R27')
         slice = '28';    
-    elseif current(1:3) == 'R29'
-        if length(current) == 8 & current == 'R29_dt10'
-            slice = '20';
-        else
-            slice = '45';
-        end
+    elseif strcmp(patient, 'R28') | strcmp(patient, 'R29')
+        slice = '86';
+    elseif strcmp(patient, 'R32')
+        slice = '63';
+    elseif strcmp(patient, 'R34')
+        slice = '45';
     else
-        slice = '100';    
+        slice = '50';    
     end
     chosen_file = strcat(current, '_s', slice,'.png,');
     chosen_images = [chosen_images, chosen_file];
@@ -92,8 +63,8 @@ chosen_images = strsplit(chosen_images,','); %split into cells
 
 %%
 %Add chosen images to current folder
-fromPath = 'P:\Shared\ImagesFromVikas\NewData\';
-toPath = 'P:\Shared\ImagesFromVikas\middle_slices\';
+fromPath = 'E:\david\R_data\';
+toPath = 'E:\david\middle_slices\';
 for i=1:length(chosen_images)
     i
     %indice = image_indices(i);
@@ -101,9 +72,10 @@ for i=1:length(chosen_images)
     name = chosen_images{i};
     sour = strcat(fromPath, name);
     des = strcat(toPath, name);
-    [status, msg, msgID] = copyfile(sour, des);
-    if msg ~= ''
+    [status, msg, ~] = copyfile(sour, des);
+    if ~strcmp(msg,'')
         disp('PROBLEM')
+        return
     end
 end
 
