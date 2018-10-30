@@ -3,10 +3,11 @@ __pycache__
 checkpoint/*
 checkpoint-test/*
 datasets/*
+events/*
+fake_fnames
+org_fnames
+pre_fnames
 logs/*
 sample/*
 test/*
 /test.py
-fake_fnames
-org_fnames
-pre_fnames
