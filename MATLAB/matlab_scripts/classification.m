@@ -35,8 +35,8 @@ mask = double(zeros(height, width));
 maskSizeX = round(width/4);
 maskSizeY = round(height/4);
 mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
-maskedImage = image .* mask;
-maskedImage = maskedImage(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
+ROI = image .* mask;
+ROI = ROI(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
 
 figure(1)
 %imshow(image), [0 255];
@@ -45,7 +45,7 @@ hold on;
 plot(centerX,centerY,'r.');
 
 figure(2)
-imshow(maskedImage);
+imshow(ROI);
 title('masked image')
 
 copy = image;
@@ -57,7 +57,7 @@ backgroundValues = image(backgroundIndices);
 figure(3)
 imshow(copy);
 
-meanROI = mean(mean(maskedImage));
+meanROI = mean(mean(ROI));
 %sdROI = std(std(masked));
 sdBackground = std(backgroundValues);
 meanBackground = mean(backgroundValues);
@@ -96,18 +96,19 @@ for i = 1:L
     maskSizeX = round(width/4);
     maskSizeY = round(height/4);
     mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
-    maskedImage = image .* mask;
-    maskedImage = maskedImage(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
+    ROI = image .* mask;
+    ROI = ROI(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
 
     %Values in image range from 0 to 1, so by assigning the values
     %of ROI to 2, the background can be found
-    image(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
+    background = image;
+    background(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
     %twos = sum(image(:) == 2)
-    backgroundIndices = find(image < 2);
-    backgroundValues = image(backgroundIndices);
+    backgroundIndices = find(background < 2);
+    backgroundValues = background(backgroundIndices);
 
-    meanROI = mean(mean(maskedImage));
-    sdROI = std(std(maskedImage));
+    meanROI = mean(mean(ROI));
+    sdROI = std(std(ROI));
     sdBackground = std(backgroundValues);
     meanBackground = mean(backgroundValues);
 
@@ -119,13 +120,14 @@ for i = 1:L
     CNRvector(i) = cnr;
 end
 
+%%%%%%%%%% PLOTTING %%%%%%%%%%%%%%%
 %%
 
 % figure(58)
 % imshow(image);
 
 figure(1)
-plot(SNRvector,'*');                                      
+plot(SNRvector);                                      
 title('SNR')
 xlabel('Samples')
 ylabel('SNR')
@@ -141,7 +143,7 @@ boxplot(SNRvector);
 title('SNR box')
 
 figure(4)
-plot(CNRvector,'*');
+plot(CNRvector);
 title('CNR')
 xlabel('Samples')
 ylabel('CNR')
@@ -156,28 +158,30 @@ figure(6)
 boxplot(CNRvector);
 title('CNR box')
 
-% SNRmean = mean(SNRvector);
-% CNRmean = mean(CNRvector);
+SNRmean = mean(SNRvector);
+CNRmean = mean(CNRvector);
+altSNRmean = mean(altSNRvector);
 
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
 top30 = round(L*0.3);
-[snr_top, snr_top_i] = maxk(SNRvector, top30);
-[cnr_top, cnr_top_i] = maxk(CNRvector, top30);
+[snr_top, snr_top_i] = maxk(altSNRvector, top30);
+[cnr_top, cnr_top_i] = maxk(SNRvector, top30);
 top_intersection = intersect(snr_top_i,cnr_top_i);
 
 low30 = round(L*0.3);
-[snr_low, snr_low_i] = mink(SNRvector, low30);
-[cnr_low, cnr_low_i] = mink(CNRvector, low30);
+[snr_low, snr_low_i] = mink(altSNRvector, low30);
+[cnr_low, cnr_low_i] = mink(SNRvector, low30);
 low_intersection = intersect(snr_low_i,cnr_low_i);
 
 %%%%%%%%%%% CLASSIFY INTO FOLDERS %%%%%%%%%%%%
 %%
 for i = 1:length(top_intersection)
+    i
     index = top_intersection(i);
     name = images(index).name;
     source = strcat('E:\david\middle_slices/', name);
-    dest = strcat('E:\david\R_high/', name);
+    dest = strcat('E:\david\R_high_roi/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')
@@ -186,16 +190,43 @@ for i = 1:length(top_intersection)
 end
 
 for i = 1:length(low_intersection)
+    i
     index = low_intersection(i);
     name = images(index).name;
     source = strcat('E:\david\middle_slices/', name);
-    dest = strcat('E:\david\R_low/', name);
+    dest = strcat('E:\david\R_low_roi/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')
         return
     end    
 end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %%%%% REGRESSION (old method)%%%%%%
 %%

@@ -16,7 +16,7 @@ for i=1:L
    time_frame = name{2};
    patient_tf = strcat(patient, '_', time_frame);
    all_images = [all_images,patient_tf,','];
-   hej = [hej, patient,','];
+%    hej = [hej, patient,','];
 end
 all_images = all_images(1:length(all_images)-1); %cut away last ','
 all_patients = strsplit(all_images,','); %split into cells
@@ -27,7 +27,7 @@ unique_patients = unique(all_patients)';
 
 %%
 % Current method for choosing of middle slices for new data
-% do this by hand...
+% control manually
 chosen_images = [];
 for i = 1:length(unique_patients)
     i
@@ -36,12 +36,16 @@ for i = 1:length(unique_patients)
     patient = cut{1};
     time_frame = cut{2};
 
-    if strcmp(patient, 'R3') | strcmp(patient, 'R5') | strcmp(patient, 'R8') | strcmp(patient, 'R10')
+    if strcmp(patient, 'R3') | strcmp(patient, 'R5') | strcmp(patient, 'R6') | strcmp(patient, 'R8') | strcmp(patient, 'R10')
         slice = '95';
-    elseif strcmp(patient, 'R6') | strcmp(patient, 'R7') | strcmp(patient, 'R11')
+    elseif strcmp(patient, 'R4') | strcmp(patient, 'R15')
+        slice = '35';
+    elseif strcmp(patient, 'R7') | strcmp(patient, 'R11')
         slice = '117';
     elseif strcmp(patient, 'R9')
         slice = '85';
+    elseif strcmp(patient, 'R20') | strcmp(patient, 'R21')
+        slice = '31';
     elseif strcmp(patient, 'R25')
         slice = '40';
     elseif strcmp(patient, 'R27')
@@ -61,7 +65,6 @@ end
 chosen_images = chosen_images(1:length(chosen_images)-1); %cut away last ','
 chosen_images = strsplit(chosen_images,','); %split into cells
 
-%%
 %Add chosen images to current folder
 fromPath = 'E:\david\R_data\';
 toPath = 'E:\david\middle_slices\';

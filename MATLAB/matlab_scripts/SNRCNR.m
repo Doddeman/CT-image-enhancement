@@ -4,7 +4,7 @@
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_batch8/*.png');
+originals = dir('../to_matlab/origs_batch8-2/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -15,7 +15,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes_batch8/*.png');
+fakes = dir('../to_matlab/fakes_batch8-2/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -53,7 +53,7 @@ end
 
 %%%%% Testing
 %% 
-n = 50000;
+n = 10000;
 figure(80)
 original = originals(n).name
 originalPath = strcat('../to_matlab/origs_batch8/', original);
@@ -80,8 +80,6 @@ epochCNR = 0;
 epochSNRroi = 0;
 
 epoch = 1;
-epochVector = zeros(n_of_epochs, 1); %For visualizing data more clearly
-saved_every = 4; %data sampled every X:th epoch
 for i = 1:L1
     i
     %Get original
@@ -104,6 +102,9 @@ for i = 1:L1
     maskedImage = original .* mask;
     originalROI = maskedImage(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX);
 
+    originalMeanROI = mean(mean(originalROI));
+    originalStdROI = std(std(originalROI));
+    
     %Get original background.
     %Values in image range from 0 to 1, so by assigning the values
     %of ROI to 2, the background can be found
@@ -112,9 +113,7 @@ for i = 1:L1
     backgroundIndices = find(original < 2);
     backgroundValues = original(backgroundIndices);
    
-    originalMeanROI = mean(mean(originalROI));
-    originalStdROI = std(std(originalROI));
-    %Add 1 to normalize over number of pixels
+    %Add 1 to normalize over all pixels
     originalStdBackground = std(backgroundValues, 1);
     originalMeanBackground = mean(backgroundValues);
 
@@ -129,27 +128,39 @@ for i = 1:L1
     fakeC = centerOfMass(fake);
     fakeCenterX = round(fakeC(2));
     fakeCenterY = round(fakeC(1));
-
     mask = double(zeros(fakeHeight, fakeWidth));
     maskSizeX = round(fakeWidth/4);
     maskSizeY = round(fakeHeight/4);
     mask(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 1;
     maskedImage = fake .* mask;
     fakeROI = maskedImage(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX);
+    
     fakeMeanROI = mean(mean(fakeROI));
     fakeStdROI = std(std(fakeROI));
+    
+    %Get fake background.
+    %Values in image range from 0 to 1, so by assigning the values
+    %of ROI to 2, the background can be found
+    fake(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
+    %twos = sum(image(:) == 2)
+    backgroundIndices = find(fake < 2);
+    backgroundValues = fake(backgroundIndices);
+    
+    %Add 1 to normalize over all pixels
+    fakeStdBackground = std(backgroundValues, 1);
+    fakeMeanBackground = mean(backgroundValues);
 
     originalSNR = originalMeanROI / originalStdBackground;
-    fakeSNR = fakeMeanROI / originalStdBackground;
-    SNRdifference = fakeSNR / originalSNR;
+    fakeSNR = fakeMeanROI / fakeStdBackground;
+    SNRdifference = fakeSNR - originalSNR;
     
     originalCNR = originalMeanROI - originalMeanBackground;
-    fakeCNR = fakeMeanROI - originalMeanBackground;
-    CNRdifference = fakeCNR / originalCNR;
+    fakeCNR = fakeMeanROI - fakeMeanBackground;
+    CNRdifference = fakeCNR - originalCNR;
     
     originalSNRroi = originalMeanROI / originalStdROI;
     fakeSNRroi = fakeMeanROI / fakeStdROI;
-    roiSNRdiff = fakeSNRroi / originalSNRroi;
+    roiSNRdiff = fakeSNRroi - originalSNRroi;
 
     epochSNR = epochSNR + SNRdifference;
     epochCNR = epochCNR + CNRdifference;
@@ -166,8 +177,7 @@ for i = 1:L1
         epochSNR = 0;
         epochCNR = 0;
         epochSNRroi = 0;
-        epochVector(epoch) = epoch-1;
-        epoch = epoch + saved_every;
+        epoch = epoch + 1;
     end
 end
 
@@ -177,10 +187,10 @@ x = ones(length(SNRvector),1);
 for i = 1:length(x)
     x(i) = i;
 end
-SNRtrend = fit(x,SNRvector,'poly2')
-CNRtrend = fit(x,CNRvector,'poly2')
+SNRtrend = fit(x,SNRvector,'poly2');
+CNRtrend = fit(x,CNRvector,'poly2');
 
-%%%%%%%%%%%%%% PLOT RESULTS %%%%%%%%%%%%
+%%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
 %%
 close all
 
@@ -203,7 +213,34 @@ title('CNR Progression')
 xlabel('Every 4:th epoch')
 ylabel('CNR difference')
 
+%%%%%%%%%%%%%% PLOT RESULTS WITHOUT TRENDS%%%%%%%%%%%%
+%%
+% close all
+
+% SNRvector(SNRvector==0) = NaN;
+% CNRvector(CNRvector==0) = NaN;
+
+figure(4)
+plot(SNRvector,'*');
+title('SNR Progression')
+xlabel('Every 4:th epoch')
+ylabel('SNR difference')
+
+figure(5)
+plot(CNRvector,'*');
+title('CNR Progression')
+xlabel('Every 4:th epoch')
+ylabel('CNR difference')
+
+% figure(3)
+% plot(roiSNRvector);
+% title('roi SNR Progression')
+% xlabel('Every 4:th epoch')
+% ylabel('CNR difference')
+
+
 %%
 %Save workspace
 total_epochs = 17;
+saved_every = 4;
 save('batch8_17epochs', 'SNRvector', 'CNRvector', 'epochVector', 'total_epochs', 'saved_every')
