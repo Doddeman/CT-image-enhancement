@@ -5,7 +5,7 @@ tf.set_random_seed(19)
 from model import cyclegan
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--dataset_dir', dest='dataset_dir', default='ct_lq2hq_new', help='path of the dataset')
+parser.add_argument('--dataset_dir', dest='dataset_dir', default='ct_lq2hq', help='path of the dataset')
 parser.add_argument('--epoch', dest='epoch', type=int, default=61, help='# of epochs')
 #Hyperparameter
 parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=100, help='# of epoch to decay lr')

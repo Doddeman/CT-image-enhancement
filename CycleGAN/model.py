@@ -262,17 +262,20 @@ class cyclegan(object):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         if args.which_direction == 'AtoB':
-            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/a'))
+            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
         elif args.which_direction == 'BtoA':
             sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testB'))
         else:
             raise Exception('--which_direction must be AtoB or BtoA')
+
+        print("number of test files:", len(sample_files))
 
         if self.load(args.checkpoint_dir):
             print(" [*] Load SUCCESS")
         else:
             print(" [!] Load failed...")
 
+        print("checkpoint_dir:", args.checkpoint_dir)
         # write html for visual comparison
         index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
         print("path:", index_path)
@@ -302,3 +305,5 @@ class cyclegan(object):
                 '..' + os.path.sep + image_path)))
             index.write("</tr>")
         index.close()
+
+        print("number of test files:", len(sample_files))
