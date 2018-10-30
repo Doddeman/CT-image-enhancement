@@ -102,8 +102,8 @@ for i = 1:L1
     maskedImage = original .* mask;
     originalROI = maskedImage(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX);
 
-    originalMeanROI = mean(mean(originalROI));
-    originalStdROI = std(std(originalROI));
+    originalMeanROI = mean(originalROI(:));
+    originalStdROI = std(originalROI(:));
     
     %Get original background.
     %Values in image range from 0 to 1, so by assigning the values
@@ -136,7 +136,7 @@ for i = 1:L1
     fakeROI = maskedImage(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX);
     
     fakeMeanROI = mean(mean(fakeROI));
-    fakeStdROI = std(std(fakeROI));
+    fakeStdROI = std(fakeROI(:));
     
     %Get fake background.
     %Values in image range from 0 to 1, so by assigning the values

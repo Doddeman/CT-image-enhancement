@@ -58,7 +58,7 @@ figure(3)
 imshow(copy);
 
 meanROI = mean(mean(ROI));
-%sdROI = std(std(masked));
+%sdROI = std(masked(:));
 sdBackground = std(backgroundValues);
 meanBackground = mean(backgroundValues);
 
@@ -108,7 +108,7 @@ for i = 1:L
     backgroundValues = background(backgroundIndices);
 
     meanROI = mean(mean(ROI));
-    sdROI = std(std(ROI));
+    sdROI = std(ROI(:));
     sdBackground = std(backgroundValues);
     meanBackground = mean(backgroundValues);
 
