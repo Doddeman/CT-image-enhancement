@@ -1,10 +1,10 @@
 %%%%%%%%%%%%%% INITIATE DATA STRUCTURES %%%%%%%%%%%%
 
-%clear all
+clear all
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_batch8-2/*.png');
+originals = dir('../to_matlab/origs_terrible/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -15,7 +15,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes_batch8-2/*.png');
+fakes = dir('../to_matlab/fakes_terrible/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -56,19 +56,19 @@ end
 n = 10000;
 figure(80)
 original = originals(n).name
-originalPath = strcat('../to_matlab/origs_batch8/', original);
+originalPath = strcat('../to_matlab/origs_terrible/', original);
 imshow(originalPath)
 
 figure(81)
 fake = fakes(n).name
-fakepath = strcat('../to_matlab/fakes_batch8/', fake);
+fakepath = strcat('../to_matlab/fakes_terrible/', fake);
 imshow(fakepath)
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
-%images_per_epoch = 1478;
+images_per_epoch = 1478;
 %images_per_epoch = 12628;
-images_per_epoch = 12624;
+% images_per_epoch = 12624;
 n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
 
 
@@ -84,7 +84,7 @@ for i = 1:L1
     i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/origs_batch8/', originalName);
+    originalPath = strcat('../to_matlab/origs_terrible/', originalName);
     original = im2double(imread(originalPath));
     original = imresize(original,[256,256]);
     original(original<0) = 0;
@@ -119,9 +119,9 @@ for i = 1:L1
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes_batch8/', fakeName);
+    fakePath = strcat('../to_matlab/fakes_terrible/', fakeName);
     fake = im2double(imread(fakePath));
-    %fake = rgb2gray(fake);
+    fake = rgb2gray(fake);
 
     %Get fake ROI
     [fakeHeight,fakeWidth] = size(fake);
@@ -181,7 +181,7 @@ for i = 1:L1
     end
 end
 
-%%%%%%%%%%%%%% GET TRENDS %%%%%%%%%%%%
+%%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
 %%
 x = ones(length(SNRvector),1);
 for i = 1:length(x)
@@ -189,58 +189,59 @@ for i = 1:length(x)
 end
 SNRtrend = fit(x,SNRvector,'poly2');
 CNRtrend = fit(x,CNRvector,'poly2');
+roiSNRtrend = fit(x,roiSNRvector,'poly2');
 
-%%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
-%%
 close all
 
-% SNRvector(SNRvector==0) = NaN;
-% CNRvector(CNRvector==0) = NaN;
-
-figure(1)
+figure(3)
 plot(SNRvector);
 hold on
 plot(SNRtrend, x, SNRvector);
 title('SNR Progression')
-xlabel('Every 4:th epoch')
+xlabel('Epochs')
 ylabel('SNR difference')
 
-figure(2)
+figure(4)
 plot(CNRvector);
 hold on
 plot(CNRtrend, x, CNRvector);
 title('CNR Progression')
-xlabel('Every 4:th epoch')
+xlabel('Epochs')
 ylabel('CNR difference')
+
+figure(5)
+plot(roiSNRvector);
+hold on
+plot(roiSNRtrend, x, roiSNRvector);
+title('roi SNR Progression')
+xlabel('Epochs')
+ylabel('SNR difference')
 
 %%%%%%%%%%%%%% PLOT RESULTS WITHOUT TRENDS%%%%%%%%%%%%
 %%
-% close all
-
-% SNRvector(SNRvector==0) = NaN;
-% CNRvector(CNRvector==0) = NaN;
+close all
 
 figure(4)
-plot(SNRvector,'*');
+plot(SNRvector);
 title('SNR Progression')
-xlabel('Every 4:th epoch')
+xlabel('Epochs')
 ylabel('SNR difference')
 
 figure(5)
-plot(CNRvector,'*');
+plot(CNRvector);
 title('CNR Progression')
-xlabel('Every 4:th epoch')
+xlabel('Epochs')
 ylabel('CNR difference')
 
-% figure(3)
-% plot(roiSNRvector);
-% title('roi SNR Progression')
-% xlabel('Every 4:th epoch')
-% ylabel('CNR difference')
+figure(3)
+plot(roiSNRvector);
+title('roi SNR Progression')
+xlabel('Epochs')
+ylabel('CNR difference')
 
 
 %%
 %Save workspace
-total_epochs = 17;
-saved_every = 4;
-save('batch8_17epochs', 'SNRvector', 'CNRvector', 'epochVector', 'total_epochs', 'saved_every')
+total_epochs = 30;
+saved_every = 1;
+save('terrible', 'SNRvector', 'CNRvector', 'roiSNRvector', 'total_epochs', 'saved_every')
