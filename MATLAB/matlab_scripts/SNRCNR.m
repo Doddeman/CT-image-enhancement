@@ -4,7 +4,7 @@ clear all
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_terrible/*.png');
+originals = dir('../to_matlab/origs_batch4/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -15,7 +15,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes_terrible/*.png');
+fakes = dir('../to_matlab/fakes_batch4/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -56,18 +56,18 @@ end
 n = 10000;
 figure(80)
 original = originals(n).name
-originalPath = strcat('../to_matlab/origs_terrible/', original);
+originalPath = strcat('../to_matlab/origs_batch4/', original);
 imshow(originalPath)
 
 figure(81)
 fake = fakes(n).name
-fakepath = strcat('../to_matlab/fakes_terrible/', fake);
+fakepath = strcat('../to_matlab/fakes_batch4/', fake);
 imshow(fakepath)
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
-images_per_epoch = 1478;
-%images_per_epoch = 12628;
+% images_per_epoch = 1478;
+images_per_epoch = 12628;
 % images_per_epoch = 12624;
 n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
 
@@ -84,7 +84,7 @@ for i = 1:L1
     i
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/origs_terrible/', originalName);
+    originalPath = strcat('../to_matlab/origs_batch4/', originalName);
     original = im2double(imread(originalPath));
     original = imresize(original,[256,256]);
     original(original<0) = 0;
@@ -113,15 +113,14 @@ for i = 1:L1
     backgroundIndices = find(original < 2);
     backgroundValues = original(backgroundIndices);
    
-    %Add 1 to normalize over all pixels
-    originalStdBackground = std(backgroundValues, 1);
+    originalStdBackground = std(backgroundValues);
     originalMeanBackground = mean(backgroundValues);
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes_terrible/', fakeName);
+    fakePath = strcat('../to_matlab/fakes_batch4/', fakeName);
     fake = im2double(imread(fakePath));
-    fake = rgb2gray(fake);
+%     fake = rgb2gray(fake);
 
     %Get fake ROI
     [fakeHeight,fakeWidth] = size(fake);
@@ -135,7 +134,7 @@ for i = 1:L1
     maskedImage = fake .* mask;
     fakeROI = maskedImage(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX);
     
-    fakeMeanROI = mean(mean(fakeROI));
+    fakeMeanROI = mean(fakeROI(:));
     fakeStdROI = std(fakeROI(:));
     
     %Get fake background.
@@ -146,8 +145,7 @@ for i = 1:L1
     backgroundIndices = find(fake < 2);
     backgroundValues = fake(backgroundIndices);
     
-    %Add 1 to normalize over all pixels
-    fakeStdBackground = std(backgroundValues, 1);
+    fakeStdBackground = std(backgroundValues);
     fakeMeanBackground = mean(backgroundValues);
 
     originalSNR = originalMeanROI / originalStdBackground;

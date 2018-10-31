@@ -75,7 +75,7 @@ cnr2 = 20*cnr;
 %%%%%%%%%%%%% CALCULATE SNR AND CNR %%%%%%%%%%%%%%%%%%%%%
 %%
 clear all;
-%close all;
+close all;
 images = dir('E:\david\middle_slices/*.png');
 L = length(images);
 SNRvector = zeros(length(images),1);
@@ -158,6 +158,22 @@ figure(6)
 boxplot(CNRvector);
 title('CNR box')
 
+figure(7)
+plot(altSNRvector);
+title('SNR')
+xlabel('Samples')
+ylabel('altSNR')
+
+figure(8)
+hist(altSNRvector);
+title('altSNR hist')
+xlabel('altSNR')
+ylabel('Samples')
+
+figure(9)
+boxplot(altSNRvector);
+title('altSNR box')
+
 SNRmean = mean(SNRvector);
 CNRmean = mean(CNRvector);
 altSNRmean = mean(altSNRvector);
@@ -165,14 +181,14 @@ altSNRmean = mean(altSNRvector);
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
 top30 = round(L*0.3);
-[snr_top, snr_top_i] = maxk(altSNRvector, top30);
-[cnr_top, cnr_top_i] = maxk(SNRvector, top30);
-top_intersection = intersect(snr_top_i,cnr_top_i);
+[~, snr_top_i] = maxk(altSNRvector, top30);
+[~, cnr_top_i] = maxk(CNRvector, top30);
+top_intersection = intersect(snr_top_i, cnr_top_i);
 
 low30 = round(L*0.3);
-[snr_low, snr_low_i] = mink(altSNRvector, low30);
-[cnr_low, cnr_low_i] = mink(SNRvector, low30);
-low_intersection = intersect(snr_low_i,cnr_low_i);
+[~, snr_low_i] = mink(altSNRvector, low30);
+[~, cnr_low_i] = mink(CNRvector, low30);
+low_intersection = intersect(snr_low_i, cnr_low_i);
 
 %%%%%%%%%%% CLASSIFY INTO FOLDERS %%%%%%%%%%%%
 %%
@@ -201,75 +217,3 @@ for i = 1:length(low_intersection)
         return
     end    
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%%%%% REGRESSION (old method)%%%%%%
-%%
-
-fitmodel = fit(SNRvector, CNRvector,'poly1')
-%%
-close all;
-p1 = 0.002343;
-p2 = 0.1204;
-goodX = [];
-badX = [];
-goodY = [];
-badY = [];
-for i=1:length(CNRvector)
-    i
-    name = images(i).name;
-    fromPath = strcat('P:\Shared\ImagesFromVikas\middle_slices\', name);
-    toPathLow = strcat('P:\Shared\ImagesFromVikas\sample_low_quality2\', name);
-    toPathHigh = strcat('P:\Shared\ImagesFromVikas\sample_high_quality2\', name);
-    image = double(imread(path));
-    x = SNRvector(i);
-    y = CNRvector(i);
-    if y < p1*x + p2
-        badY = [badY;y];
-        badX = [badX;x];
-        copyfile (fromPath, toPathLow);
-    else
-        goodY = [goodY;y];
-        goodX = [goodX;x];
-        copyfile (fromPath, toPathHigh);
-    end
-end
-
-figure(59)
-plot(fitmodel,goodX,goodY,'g*');
-hold on
-plot(badX,badY,'*');
-title('SNR vs CNR')
-xlabel('SNR')
-ylabel('CNR')
-
-figure(56)
-plot(fitmodel,SNRvector,CNRvector,'*');
-title('SNR vs CNR')
-xlabel('SNR')
-ylabel('CNR')
