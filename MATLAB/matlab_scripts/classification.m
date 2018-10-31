@@ -75,7 +75,7 @@ cnr2 = 20*cnr;
 %%%%%%%%%%%%% CALCULATE SNR AND CNR %%%%%%%%%%%%%%%%%%%%%
 %%
 clear all;
-%close all;
+close all;
 images = dir('E:\david\middle_slices/*.png');
 L = length(images);
 SNRvector = zeros(length(images),1);
@@ -158,6 +158,22 @@ figure(6)
 boxplot(CNRvector);
 title('CNR box')
 
+figure(7)
+plot(altSNRvector);
+title('SNR')
+xlabel('Samples')
+ylabel('altSNR')
+
+figure(8)
+hist(altSNRvector);
+title('altSNR hist')
+xlabel('altSNR')
+ylabel('Samples')
+
+figure(9)
+boxplot(altSNRvector);
+title('altSNR box')
+
 SNRmean = mean(SNRvector);
 CNRmean = mean(CNRvector);
 altSNRmean = mean(altSNRvector);
@@ -165,14 +181,14 @@ altSNRmean = mean(altSNRvector);
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
 top30 = round(L*0.3);
-[snr_top, snr_top_i] = maxk(altSNRvector, top30);
-[cnr_top, cnr_top_i] = maxk(SNRvector, top30);
-top_intersection = intersect(snr_top_i,cnr_top_i);
+[~, snr_top_i] = maxk(altSNRvector, top30);
+[~, cnr_top_i] = maxk(CNRvector, top30);
+top_intersection = intersect(snr_top_i, cnr_top_i);
 
 low30 = round(L*0.3);
-[snr_low, snr_low_i] = mink(altSNRvector, low30);
-[cnr_low, cnr_low_i] = mink(SNRvector, low30);
-low_intersection = intersect(snr_low_i,cnr_low_i);
+[~, snr_low_i] = mink(altSNRvector, low30);
+[~, cnr_low_i] = mink(CNRvector, low30);
+low_intersection = intersect(snr_low_i, cnr_low_i);
 
 %%%%%%%%%%% CLASSIFY INTO FOLDERS %%%%%%%%%%%%
 %%
