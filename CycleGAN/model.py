@@ -166,8 +166,8 @@ class cyclegan(object):
                 self.writer.add_summary(summary_str, counter)
                 #########################
                 # Save images for cnr and snr calculations in matlab
-                '''if epoch % 4 == 0:
-                print("saving batch", idx)
+                #if epoch % 4 == 0:
+                '''print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
                     print(i, batch_files[i][0])
@@ -185,7 +185,6 @@ class cyclegan(object):
                     batch_counter += 1'''
 
                 snr = signaltonoise(fake_B)
-                print("SNR:",snr)
                 ###########################
 
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
@@ -199,14 +198,15 @@ class cyclegan(object):
                                self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
                 
-                print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
-
                 counter += 1        
-
+                print ("counter:", counter)
+                #Saves a sample image with print_freq
                 if np.mod(counter, args.print_freq) == 1:
-                    self.sample_model(args.sample_dir, epoch, idx)
+                    #self.sample_model(args.sample_dir, epoch, idx)
                     print(("Epoch: [%2d] [%4d/%4d] time: %4.4f" % (
-                        epoch, idx, batch_idxs, time.time() - start_time)))     
+                        epoch, idx, batch_idxs, time.time() - start_time)))   
+                    print("SNR:",snr)
+                    print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 if np.mod(counter, args.save_freq) == 2:
                     self.save(args.checkpoint_dir, counter)
@@ -275,7 +275,6 @@ class cyclegan(object):
         else:
             print(" [!] Load failed...")
 
-        print("checkpoint_dir:", args.checkpoint_dir)
         # write html for visual comparison
         index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
         print("path:", index_path)
@@ -286,8 +285,9 @@ class cyclegan(object):
         out_var, in_var = (self.testB, self.test_A) if args.which_direction == 'AtoB' else (
             self.testA, self.test_B)
 
+        file_counter = 0
         for sample_file in sample_files:
-            print('Processing image: ' + sample_file)
+            print('Processing image: ', file_counter, "out of", len(sample_files))
             sample_image = [load_test_data(sample_file, args.fine_size)]
             #Get image size
             #But will probably only receive 256x256
@@ -304,6 +304,7 @@ class cyclegan(object):
             index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
                 '..' + os.path.sep + image_path)))
             index.write("</tr>")
+            file_counter += 1
         index.close()
 
-        print("number of test files:", len(sample_files))
+        print("CHECKPOINT DIRECTORY:", args.checkpoint_dir)
