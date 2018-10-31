@@ -50,6 +50,7 @@ def load_test_data(image_path, fine_size=256, input_c_dim=1):
     return img
 
 def load_train_data(image_path, load_size=286, fine_size=256, input_c_dim=1, output_c_dim=1, is_testing=False):
+    #It seems that the load_size is used to crop down to fine_size safely
     img_A = imread(image_path[0])
     img_B = imread(image_path[1])
 
@@ -58,6 +59,9 @@ def load_train_data(image_path, load_size=286, fine_size=256, input_c_dim=1, out
         img_B = scipy.misc.imresize(img_B, [load_size, load_size])
         h1 = int(np.ceil(np.random.uniform(1e-2, load_size-fine_size)))
         w1 = int(np.ceil(np.random.uniform(1e-2, load_size-fine_size)))
+        #A tiny random part of the image, some part of the frame, is removed
+        #Probably for image augmentation. Put into h1 and w1
+        #print("h1",h1,"w1",w1)
         img_A = img_A[h1:h1+fine_size, w1:w1+fine_size]
         img_B = img_B[h1:h1+fine_size, w1:w1+fine_size]
         img_A = img_A[:, :, :input_c_dim] #Changing to correct channel dim
