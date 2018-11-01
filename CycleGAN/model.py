@@ -209,7 +209,8 @@ class cyclegan(object):
                     print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 #Create a model checkpoint at save_freq
-                if np.mod(counter, args.save_freq) == 2:
+                if np.mod(counter, args.save_freq) == 2: #should do it at the end of an epoch
+                    print("Checkpoint at counter =", counter)
                     self.save(args.checkpoint_dir, counter)
 
         print("Training finished!")
@@ -225,7 +226,7 @@ class cyclegan(object):
 
         self.saver.save(self.sess,
                         os.path.join(checkpoint_dir, model_name),
-                        global_step=step)
+                        global_step=step) #should add epoch to name instead of step
 
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoint...")
