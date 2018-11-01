@@ -162,7 +162,7 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                print ("idx:", idx)
+                print ("Total step counter:", counter)
                 '''print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
@@ -203,13 +203,14 @@ class cyclegan(object):
                 #Saves a sample image with print_freq (and prints info)
                 if np.mod(counter, args.print_freq) == 1:
                     #self.sample_model(args.sample_dir, epoch, idx, args.load_size, args.fine_size)
-                    print(("Epoch: [%2d] [%4d/%4d] time: %4.4f" % (
-                        epoch, idx, batch_idxs, time.time() - start_time)))   
+                    print(("Epoch: [%2d/%2d] [%4d/%4d] time: %4.4f" % (
+                        epoch, args.epoch-1, idx, batch_idxs, time.time() - start_time)))   
                     print("SNR:",snr)
                     print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 #Create a model checkpoint at save_freq
-                if np.mod(counter, args.save_freq) == 2:
+                if np.mod(counter, args.save_freq) == 2: #should do it at the end of an epoch
+                    print("Checkpoint at counter =", counter)
                     self.save(args.checkpoint_dir, counter)
 
         print("Training finished!")
@@ -225,7 +226,7 @@ class cyclegan(object):
 
         self.saver.save(self.sess,
                         os.path.join(checkpoint_dir, model_name),
-                        global_step=step)
+                        global_step=step) #should add epoch to name instead of step
 
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoint...")
