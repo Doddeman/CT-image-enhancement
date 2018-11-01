@@ -79,9 +79,11 @@ fakeCNRvector = zeros(L1,1);
 SNRvector = zeros(n_of_epochs,1);
 CNRvector = zeros(n_of_epochs,1);
 roiSNRvector = zeros(n_of_epochs,1);
+UIQIvector = zeros(n_of_epochs,1);
 epochSNR = 0;
 epochCNR = 0;
 epochSNRroi = 0;
+epochUIQI = 0;
 
 epoch = 1;
 for i = 1:L1
@@ -112,10 +114,11 @@ for i = 1:L1
     %Get original background.
     %Values in image range from 0 to 1, so by assigning the values
     %of ROI to 2, the background can be found
-    original(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
+    origCopy = original;
+    origCopy(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
     %twos = sum(image(:) == 2)
-    backgroundIndices = find(original < 2);
-    backgroundValues = original(backgroundIndices);
+    backgroundIndices = find(origCopy < 2);
+    backgroundValues = origCopy(backgroundIndices);
    
     originalStdBackground = std(backgroundValues);
     originalMeanBackground = mean(backgroundValues);
@@ -144,10 +147,11 @@ for i = 1:L1
     %Get fake background.
     %Values in image range from 0 to 1, so by assigning the values
     %of ROI to 2, the background can be found
-    fake(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
+    fakeCopy = fake;
+    fakeCopy(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
     %twos = sum(image(:) == 2)
-    backgroundIndices = find(fake < 2);
-    backgroundValues = fake(backgroundIndices);
+    backgroundIndices = find(fakeCopy < 2);
+    backgroundValues = fakeCopy(backgroundIndices);
     
     fakeStdBackground = std(backgroundValues);
     fakeMeanBackground = mean(backgroundValues);
@@ -163,22 +167,28 @@ for i = 1:L1
     originalSNRroi = originalMeanROI / originalStdROI;
     fakeSNRroi = fakeMeanROI / fakeStdROI;
     roiSNRdiff = fakeSNRroi - originalSNRroi;
+    
+    [UIQI ~] = UIQI(original, fake);
 
     epochSNR = epochSNR + SNRdifference;
     epochCNR = epochCNR + CNRdifference;
     epochSNRroi = epochSNRroi + roiSNRdiff;
+    epochUIQI = epochUIQI + UIQI;
 
     if mod(i,images_per_epoch) == 0 % End of epoch?
         %i
         meanSNR = epochSNR / images_per_epoch;
         meanCNR = epochCNR / images_per_epoch;
         meanSNRroi = epochSNRroi / images_per_epoch;
+        meanUIQI = epochUIQI / images_per_epoch;
         SNRvector(epoch) = meanSNR;
         CNRvector(epoch) = meanCNR;
         roiSNRvector(epoch) = meanSNRroi;
+        UIQIvector(epoch) = meanUIQI;
         epochSNR = 0;
         epochCNR = 0;
         epochSNRroi = 0;
+        epochUIQI = 0;
         epoch = epoch + 1;
     end
     

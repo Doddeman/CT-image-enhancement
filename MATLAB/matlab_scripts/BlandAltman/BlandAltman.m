@@ -32,7 +32,7 @@
 %  - 'eq' - slope and intercept equation
 %  - 'r' - Pearson r-value
 %  - 'r2' - Pearson r-value squared
-%  - 'rho' - Spearman rho value
+%  - 'rho' - Spearman rho value. Correlation coefficent? 
 %  - 'SSE' - sum of squared error
 %  - 'RMSE' - root mean squared error
 %  - 'n' - number of data points used
