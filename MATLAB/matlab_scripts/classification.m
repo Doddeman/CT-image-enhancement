@@ -181,12 +181,14 @@ altSNRmean = mean(altSNRvector);
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
 top30 = round(L*0.3);
-[~, snr_top_i] = maxk(altSNRvector, top30);
+[~, snr_top_i] = maxk(SNRvector, top30);
+% [~, snr_top_i] = maxk(altSNRvector, top30);
 [~, cnr_top_i] = maxk(CNRvector, top30);
 top_intersection = intersect(snr_top_i, cnr_top_i);
 
 low30 = round(L*0.3);
-[~, snr_low_i] = mink(altSNRvector, low30);
+[~, snr_low_i] = mink(SNRvector, low30);
+% [~, snr_low_i] = mink(altSNRvector, low30);
 [~, cnr_low_i] = mink(CNRvector, low30);
 low_intersection = intersect(snr_low_i, cnr_low_i);
 
