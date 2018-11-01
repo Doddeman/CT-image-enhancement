@@ -71,6 +71,10 @@ images_per_epoch = 12628;
 % images_per_epoch = 12624;
 n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
 
+origSNRvector = zeros(L1,1);
+fakeSNRvector = zeros(L1,1);
+origCNRvector = zeros(L1,1);
+fakeCNRvector = zeros(L1,1);
 
 SNRvector = zeros(n_of_epochs,1);
 CNRvector = zeros(n_of_epochs,1);
@@ -177,6 +181,15 @@ for i = 1:L1
         epochSNRroi = 0;
         epoch = epoch + 1;
     end
+    
+    %If it is the last epoch, start saving for BA
+    if i > (L1-images_per_epoch)
+        origSNRvector(i-images_per_epoch) = originalSNR;
+        fakeSNRvector(i-images_per_epoch) = fakeSNR;
+        origCNRvector(i-images_per_epoch) = originalCNR;
+        fakeCNRvector(i-images_per_epoch) = fakeCNR;
+    end
+    
 end
 
 %%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
@@ -215,28 +228,12 @@ title('roi SNR Progression')
 xlabel('Epochs')
 ylabel('SNR difference')
 
-%%%%%%%%%%%%%% PLOT RESULTS WITHOUT TRENDS%%%%%%%%%%%%
+%%%%%%%%%%%%%% BLAND ALTMAN AND CORRELATION %%%%%%%%%%%%
 %%
-close all
-
-figure(4)
-plot(SNRvector);
-title('SNR Progression')
-xlabel('Epochs')
-ylabel('SNR difference')
-
-figure(5)
-plot(CNRvector);
-title('CNR Progression')
-xlabel('Epochs')
-ylabel('CNR difference')
-
-figure(3)
-plot(roiSNRvector);
-title('roi SNR Progression')
-xlabel('Epochs')
-ylabel('CNR difference')
-
+[rpc, ~, stats] = BlandAltman(origSNRvector, fakeSNRvector, {'Orig SNR','Fake SNR'},...
+    'Correlation plot and Bland Altman', 'data', 'baYLimMode', 'Auto', 'data1Mode', 'Truth');
+[rpc, ~, stats] = BlandAltman(origCNRvector, fakeCNRvector, {'Orig CNR','Fake CNR'},...
+    'Correlation plot and Bland Altman', 'data', 'baYLimMode', 'Auto', 'data1Mode', 'Truth');
 
 %%
 %Save workspace
