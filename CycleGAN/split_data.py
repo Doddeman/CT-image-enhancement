@@ -3,11 +3,11 @@ import os
 from shutil import copyfile
 
 #print (os.getcwd())
-FROM_PATH = 'datasets/ct_lq2hq_new/trainB'
-TO_PATH = 'datasets/ct_lq2hq_new/testB'
+FROM_PATH = 'datasets/R/trainA'
+TO_PATH = 'datasets/R/testA'
 
 N_FILES = len([file for file in os.listdir(FROM_PATH) if file.endswith(".png")])
-N_TEST_FILES = int(round(N_FILES*0.3))
+N_TEST_FILES = int(round(N_FILES*0.2))
 sample_indices = random.sample(range(N_FILES), N_TEST_FILES)
 
 test_files = []
