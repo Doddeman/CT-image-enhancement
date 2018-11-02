@@ -6,12 +6,12 @@ from model import cyclegan
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--dataset_dir', dest='dataset_dir', default='ct_lq2hq_new', help='path of the dataset')
-parser.add_argument('--epoch', dest='epoch', type=int, default=15, help='# of epochs')
+parser.add_argument('--epoch', dest='epoch', type=int, default=70, help='# of epochs')
 #Hyperparameter
 parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=100, help='# of epoch to decay lr')
 #Hyperparameter
 parser.add_argument('--batch_size', dest='batch_size', type=int, default=1, help='# images in batch')
-#parser.add_argument('--train_size', dest='train_size', type=int, default=300, help='# images used to train')
+#parser.add_argument('--train_size', dest='train_size', type=int, default=40, help='# images used to train')
 parser.add_argument('--train_size', dest='train_size', type=int, default=1e8, help='# images used to train')
 #Change to save RAM?
 parser.add_argument('--load_size', dest='load_size', type=int, default=286, help='scale images to this size')
@@ -28,13 +28,13 @@ parser.add_argument('--lr', dest='lr', type=float, default=0.0002, help='initial
 parser.add_argument('--beta1', dest='beta1', type=float, default=0.5, help='momentum term of adam')
 parser.add_argument('--which_direction', dest='which_direction', default='AtoB', help='AtoB or BtoA')
 parser.add_argument('--phase', dest='phase', default='train', help='train, test')
-#save_freq should be some part of training data set size
-parser.add_argument('--save_freq', dest='save_freq', type=int, default=1000, help='save a model every save_freq iterations')
+#save_freq should be training data set size divided by batch size
+#parser.add_argument('--save_freq', dest='save_freq', type=int, default=4098, help='save a model every save_freq iterations')
 parser.add_argument('--print_freq', dest='print_freq', type=int, default=50, help='print the debug information every print_freq iterations')
 parser.add_argument('--continue_train', dest='continue_train', type=bool, default=False, help='if continue training, load the latest model: 1: true, 0: false')
 parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', default='./checkpoint', help='models are saved here')
 parser.add_argument('--sample_dir', dest='sample_dir', default='./sample', help='sample are saved here')
-parser.add_argument('--test_dir', dest='test_dir', default='./test_new', help='test sample are saved here')
+parser.add_argument('--test_dir', dest='test_dir', default='./test_newww', help='test sample are saved here')
 #Hyperparameter
 parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=10.0, help='weight on L1 term in objective')
 parser.add_argument('--use_resnet', dest='use_resnet', type=bool, default=True, help='generation network using reidule block')

@@ -180,12 +180,12 @@ class cyclegan(object):
                     resh = np.reshape(fake_B[i], (args.fine_size, args.fine_size))
                     # RESIZE TO 256x256 ?
                     # I think so if you want to perform calcs on it
-                    # To get SNR etc. 
+                    # To get SNR etc.
                     resh = resize(resh, (256,256), anti_aliasing=True)
                     scipy.misc.imsave(fake_path, resh)
                     batch_counter += 1'''
 
-                snr = signaltonoise(fake_B)
+                #snr = signaltonoise(fake_B)
                 ###########################
 
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
@@ -198,26 +198,27 @@ class cyclegan(object):
                                self.fake_B_sample: fake_B,
                                self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
-                
-                counter += 1        
-                #Saves a sample image with print_freq (and prints info)
+
+                counter += 1
+                #Prints info and saves a sample image with print_freq
                 if np.mod(counter, args.print_freq) == 1:
                     #self.sample_model(args.sample_dir, epoch, idx, args.load_size, args.fine_size)
                     print(("Epoch: [%2d/%2d] [%4d/%4d] time: %4.4f" % (
-                        epoch, args.epoch-1, idx, batch_idxs, time.time() - start_time)))   
-                    print("SNR:",snr)
+                        epoch, args.epoch-1, idx, batch_idxs, time.time() - start_time)))
+                    #print("SNR:",snr)
                     print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 #Create a model checkpoint at save_freq
-                if np.mod(counter, args.save_freq) == 2: #should do it at the end of an epoch
-                    print("Checkpoint at counter =", counter)
-                    self.save(args.checkpoint_dir, counter)
+                #if np.mod(counter, args.save_freq) == 2: #Switched it to save every epoch
+                if np.mod(counter, batch_idxs) == 0:
+                    print("Epoch checkpoint at counter =", counter)
+                    self.save(args.checkpoint_dir, epoch, counter)
 
         print("Training finished!")
 
-    def save(self, checkpoint_dir, step):
+    def save(self, checkpoint_dir, epoch, step):
         model_name = "cyclegan.model"
-        #remove image size from directory name?
+        #remove image size from directory name? no it's useful
         model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
 
@@ -226,22 +227,21 @@ class cyclegan(object):
 
         self.saver.save(self.sess,
                         os.path.join(checkpoint_dir, model_name),
-                        global_step=step) #should add epoch to name instead of step
+                        global_step=epoch) #epoch in the name instead of step
 
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoint...")
 
-        #remove image size from directory name?
+        #remove image size from directory name? no it's useful
         model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
-
-        print("MODEL_DIR:", model_dir)
-        print("CHECKPOINT_DIR:", checkpoint_dir)
-
+        #print("CHECKPOINT_DIR:", checkpoint_dir)
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir) #Analyze get_checkpoint_state!!
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            print("CHECKPOINT NAME:", ckpt_name)
+            #ckpt_name = "cyclegan.model-214002"
+            print("CHECKPOINT:", ckpt)
+            print("CHECKPOINT MODEL:", ckpt_name)
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
             return True
         else:
@@ -305,7 +305,7 @@ class cyclegan(object):
             image_path = os.path.join(args.test_dir,
                                       '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
-            
+
             #Resize image to 256x256
             n_of_images = fake_img.shape[0]
             for i in range(n_of_images):
