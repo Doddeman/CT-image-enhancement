@@ -4,7 +4,7 @@ clear all
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_R_8/*.png');
+originals = dir('../to_matlab/origs_8_50/*.png');
 fields = fieldnames(originals);
 cells = struct2cell(originals);
 sz = size(cells);
@@ -15,7 +15,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 originals = cell2struct(cells, fields, 1);
 
-fakes = dir('../to_matlab/fakes_R_8/*.png');
+fakes = dir('../to_matlab/fakes_8_50/*.png');
 fields = fieldnames(fakes);
 cells = struct2cell(fakes);
 sz = size(cells);
@@ -53,23 +53,23 @@ end
 
 %%%%% Testing
 %% 
-n = 200000;
+n = 100000;
 figure(80)
 original = originals(n).name
-originalPath = strcat('../to_matlab/origs_R_8/', original);
+originalPath = strcat('../to_matlab/origs_8_50/', original);
 imshow(originalPath)
 
 figure(81)
 fake = fakes(n).name
-fakepath = strcat('../to_matlab/fakes_R_8/', fake);
+fakepath = strcat('../to_matlab/fakes_8_50/', fake);
 imshow(fakepath)
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
 % images_per_epoch = 1478;
 % images_per_epoch = 12628;
-% images_per_epoch = 12624;
-images_per_epoch = 4096;
+images_per_epoch = 12624;
+% images_per_epoch = 4096;
 n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
 
 origSNRvector = zeros(images_per_epoch,1);
@@ -80,23 +80,23 @@ fakeCNRvector = zeros(images_per_epoch,1);
 SNRvector = zeros(n_of_epochs,1);
 CNRvector = zeros(n_of_epochs,1);
 roiSNRvector = zeros(n_of_epochs,1);
-% UIQIvector = zeros(n_of_epochs,1);
+UIQIvector = zeros(n_of_epochs,1);
 epochSNR = 0;
 epochCNR = 0;
 epochSNRroi = 0;
-% epochUIQI = 0;
+epochUIQI = 0;
 
 epoch = 1;
 j=1;
 for i = 1:L1
     i
+    % GET IMAGES ROIS AND BACKGROUNDS
     %Get original
     originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/origs_R_8/', originalName);
+    originalPath = strcat('../to_matlab/origs_8_50/', originalName);
     original = im2double(imread(originalPath));
 %     original = imresize(original,[256,256]);
     original(original<0) = 0;
-    
 
     %Get original ROI
     [origHeight,origWidth] = size(original);
@@ -119,8 +119,8 @@ for i = 1:L1
     %of ROI to 2, the background can be found
     origCopy = original;
     origCopy(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
-    %twos = sum(image(:) == 2)
-    backgroundIndices = find(origCopy < 2);
+    %twos = sum(image(:) == 2) %Checking the size of ROI
+    backgroundIndices = origCopy < 2;
     backgroundValues = origCopy(backgroundIndices);
    
     originalStdBackground = std(backgroundValues);
@@ -128,7 +128,7 @@ for i = 1:L1
 
     % Get fake image
     fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes_R_8/', fakeName);
+    fakePath = strcat('../to_matlab/fakes_8_50/', fakeName);
     fake = im2double(imread(fakePath));
 %     fake = rgb2gray(fake);
 %     fake(fake<0) = 0;
@@ -154,12 +154,12 @@ for i = 1:L1
     fakeCopy = fake;
     fakeCopy(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
     %twos = sum(image(:) == 2)
-    backgroundIndices = find(fakeCopy < 2);
+    backgroundIndices = fakeCopy < 2;
     backgroundValues = fakeCopy(backgroundIndices);
     
     fakeStdBackground = std(backgroundValues);
     fakeMeanBackground = mean(backgroundValues);
-
+    % START CALCULATIONS
     originalSNR = originalMeanROI / originalStdBackground;
     fakeSNR = fakeMeanROI / fakeStdBackground;
     SNRdifference = fakeSNR - originalSNR;
@@ -174,28 +174,27 @@ for i = 1:L1
     
 %     twos = sum(original(:) < 0)
 %     twoos = sum(fake(:) < 0 )
-%     [uiqii o] = UIQI(original, fake);
+    [UIQI ~] = get_uiqi(original, fake);
 %     [qi qi_map] = img_qi(img1, img2)
 
     epochSNR = epochSNR + SNRdifference;
     epochCNR = epochCNR + CNRdifference;
     epochSNRroi = epochSNRroi + roiSNRdiff;
-%     epochUIQI = epochUIQI + uiqii;
+    epochUIQI = epochUIQI + UIQI;
 
     if mod(i,images_per_epoch) == 0 % End of epoch?
-        %i
         meanSNR = epochSNR / images_per_epoch;
         meanCNR = epochCNR / images_per_epoch;
         meanSNRroi = epochSNRroi / images_per_epoch;
-%         meanUIQI = epochUIQI / images_per_epoch;
+        meanUIQI = epochUIQI / images_per_epoch;
         SNRvector(epoch) = meanSNR;
         CNRvector(epoch) = meanCNR;
         roiSNRvector(epoch) = meanSNRroi;
-%         UIQIvector(epoch) = meanUIQI;
+        UIQIvector(epoch) = meanUIQI;
         epochSNR = 0;
         epochCNR = 0;
         epochSNRroi = 0;
-%         epochUIQI = 0;
+        epochUIQI = 0;
         epoch = epoch + 1;
     end
     
@@ -250,7 +249,7 @@ end
 %     origCopy = original;
 %     origCopy(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
 %     %twos = sum(image(:) == 2)
-%     backgroundIndices = find(origCopy < 2);
+%     backgroundIndices = origCopy < 2;
 %     backgroundValues = origCopy(backgroundIndices);
 %    
 %     originalStdBackground = std(backgroundValues);
@@ -284,7 +283,7 @@ end
 %     fakeCopy = fake;
 %     fakeCopy(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
 %     %twos = sum(image(:) == 2)
-%     backgroundIndices = find(fakeCopy < 2);
+%     backgroundIndices = fakeCopy < 2;
 %     backgroundValues = fakeCopy(backgroundIndices);
 %     
 %     fakeStdBackground = std(backgroundValues);
@@ -313,7 +312,7 @@ end
 SNRtrend = fit(x,SNRvector,'poly2');
 CNRtrend = fit(x,CNRvector,'poly2');
 roiSNRtrend = fit(x,roiSNRvector,'poly2');
-
+UIQItrend = fit(x,UIQIvector, 'poly2');
 close all
 
 figure(3)
@@ -340,6 +339,15 @@ title('roi SNR Progression')
 xlabel('Epochs')
 ylabel('SNR difference')
 
+figure(6)
+plot(UIQIvector);
+hold on
+plot(UIQItrend, x, UIQIvector);
+title('UIQI Progression')
+xlabel('Epochs')
+ylabel('UIQI')
+
+
 %%%%%%%%%%%%%% BLAND ALTMAN AND CORRELATION %%%%%%%%%%%%
 %%
 close all;
@@ -350,7 +358,7 @@ close all;
 
 %%
 %Save workspace
-total_epochs = 80;
-saved_every = 1;
-save('R_8_80', 'SNRvector', 'CNRvector', 'roiSNRvector', 'total_epochs', 'saved_every',...
-    'origSNRvector', 'fakeSNRvector', 'origCNRvector', 'fakeCNRvector')
+total_epochs = 17;
+saved_every = 4;
+save('batch8_17epochs', 'SNRvector', 'CNRvector', 'roiSNRvector', 'total_epochs', 'saved_every',...
+    'UIQIvector', 'origSNRvector', 'fakeSNRvector', 'origCNRvector', 'fakeCNRvector')
