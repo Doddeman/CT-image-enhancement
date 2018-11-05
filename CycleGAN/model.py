@@ -307,14 +307,14 @@ class cyclegan(object):
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
 
             #Resize image to 256x256
-            n_of_images = fake_img.shape[0]
+            '''n_of_images = fake_img.shape[0]
             for i in range(n_of_images):
                 fake_resized = resize(fake_img[0], (output_size,output_size), anti_aliasing=True)
                 fake_resized = np.reshape(fake_resized, (output_size, output_size)) #get rid of color channel
                 #print("FAKE_REIZED2:", fake_resized.shape)
-                scipy.misc.imsave(image_path, fake_resized)
+                scipy.misc.imsave(image_path, fake_resized)'''
 
-            #save_images(fake_img, [1, 1], image_path)
+            save_images(fake_img, [1, 1], image_path)
             index.write("<td>%s</td>" % os.path.basename(image_path))
             index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
                 '..' + os.path.sep + sample_file)))
@@ -323,5 +323,3 @@ class cyclegan(object):
             index.write("</tr>")
             file_counter += 1
         index.close()
-
-        print("CHECKPOINT DIRECTORY:", args.checkpoint_dir)
