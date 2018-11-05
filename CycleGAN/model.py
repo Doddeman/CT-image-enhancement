@@ -233,14 +233,15 @@ class cyclegan(object):
         print(" [*] Reading checkpoint...")
 
         #remove image size from directory name? no it's useful
-        #model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
-        model_dir = "ct_lq2hq_new_128"
+        model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
+        #model_dir = "ct_lq2hq_new_128"
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
         print("CHECKPOINT_DIR:", checkpoint_dir)
-        ckpt = tf.train.get_checkpoint_state(checkpoint_dir) #Analyze get_checkpoint_state!!
+        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+        #ckpt = tf.train.get_checkpoint_state(checkpoint_dir, latest_filename="cyclegan.model-214002")
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            #ckpt_name = "cyclegan.model-214002"
+            #ckpt_name = "cyclegan.model-214002" #remove
             print("CHECKPOINT:", ckpt)
             print("CHECKPOINT MODEL:", ckpt_name)
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
