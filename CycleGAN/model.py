@@ -162,8 +162,8 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                #print ("Total step counter:", counter)
-                print("saving batch", idx)
+                print ("Total step counter:", counter)
+                '''print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
@@ -183,7 +183,7 @@ class cyclegan(object):
                     # To get SNR etc.
                     #resh = resize(resh, (256,256), anti_aliasing=True)
                     scipy.misc.imsave(fake_path, resh)
-                    batch_counter += 1
+                    batch_counter += 1'''
 
                 #snr = signaltonoise(fake_B)
                 ###########################
@@ -227,7 +227,7 @@ class cyclegan(object):
 
         self.saver.save(self.sess,
                         os.path.join(checkpoint_dir, model_name),
-                        global_step=epoch) #epoch in the name instead of step
+                        global_step=epoch, max_to_keep=None) #epoch in the name instead of step
 
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoint...")
