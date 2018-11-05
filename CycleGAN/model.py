@@ -233,9 +233,10 @@ class cyclegan(object):
         print(" [*] Reading checkpoint...")
 
         #remove image size from directory name? no it's useful
-        model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
+        #model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
+        model_dir = "ct_lq2hq_new_128"
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
-        #print("CHECKPOINT_DIR:", checkpoint_dir)
+        print("CHECKPOINT_DIR:", checkpoint_dir)
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir) #Analyze get_checkpoint_state!!
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
@@ -295,9 +296,11 @@ class cyclegan(object):
         out_var, in_var = (self.testB, self.test_A) if args.which_direction == 'AtoB' else (
             self.testA, self.test_B)
 
+        #print("OU", out_var,"INN" in_var)
+
         file_counter = 0
         for sample_file in sample_files:
-            print('Processing image: ', file_counter, "out of", len(sample_files))
+            print('Processing image: ', file_counter+1, "out of", len(sample_files))
             sample_image = [load_test_data(sample_file, args.fine_size)]
             #Get image size
             #But will probably only receive 256x256
