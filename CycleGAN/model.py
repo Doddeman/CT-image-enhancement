@@ -162,16 +162,16 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                print ("Total step counter:", counter)
-                '''print("saving batch", idx)
+                #print ("Total step counter:", counter)
+                print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_R_8/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_R_8/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
                     copyfile(batch_files[i][0], original_path)
@@ -181,9 +181,9 @@ class cyclegan(object):
                     # RESIZE TO 256x256 ?
                     # I think so if you want to perform calcs on it
                     # To get SNR etc.
-                    resh = resize(resh, (256,256), anti_aliasing=True)
+                    #resh = resize(resh, (256,256), anti_aliasing=True)
                     scipy.misc.imsave(fake_path, resh)
-                    batch_counter += 1'''
+                    batch_counter += 1
 
                 #snr = signaltonoise(fake_B)
                 ###########################
