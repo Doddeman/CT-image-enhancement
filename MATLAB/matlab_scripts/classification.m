@@ -2,7 +2,8 @@
 % plots them to classify into high and low quality.
 % Works best if the images have been sampled beforehand.
 % Use the sampling script to get middle slices for patients
-
+% https://www.mathworks.com/help/images/ref/grayconnected.html
+% https://www.mathworks.com/help/images/morphological-filtering.html
 
 %%%%%%%%% SECTION FOR TESTING CALCULATIONS %%%%%%%%%%%%%%
 %%
@@ -65,10 +66,10 @@ meanBackground = mean(backgroundValues);
 signal = meanROI;
 contrast = meanROI-meanBackground;
 noise = sdBackground;
-snr = signal/noise;
+SNR = signal/noise;
 c = contrast/noise;
-cnr = log10(c);
-cnr2 = 20*cnr;
+CNR = log10(c);
+cnr2 = 20*CNR;
 %cnr = meanROI-sdBackground;
 
 
@@ -76,15 +77,15 @@ cnr2 = 20*cnr;
 %%
 clear all;
 close all;
-images = dir('E:\david\middle_slices/*.png');
+images = dir('E:\david\R_middle_slices/*.png');
 L = length(images);
 SNRvector = zeros(length(images),1);
-altSNRvector = zeros(length(images),1);
+roiSNRvector = zeros(length(images),1);
 CNRvector = zeros(length(images),1);
 for i = 1:L
     i
     name = images(i).name;
-    path = strcat('E:\david\middle_slices/', name);
+    path = strcat('E:\david\R_middle_slices/', name);
     image = im2double(imread(path));
     %image = rgb2gray(image);
     [height,width] = size(image);
@@ -104,27 +105,41 @@ for i = 1:L
     background = image;
     background(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
     %twos = sum(image(:) == 2)
-    backgroundIndices = find(background < 2);
+    backgroundIndices = background < 2;
     backgroundValues = background(backgroundIndices);
 
-    meanROI = mean(mean(ROI));
+    meanROI = mean(ROI(:));
     sdROI = std(ROI(:));
     sdBackground = std(backgroundValues);
     meanBackground = mean(backgroundValues);
 
-    altsnr = meanROI/sdROI;
-    snr = meanROI/sdBackground;
-    cnr = meanROI-meanBackground;
-    altSNRvector(i) = altsnr;
-    SNRvector(i) = snr;
-    CNRvector(i) = cnr;
+    roiSNR = meanROI/sdROI;
+    SNR = meanROI/sdBackground;
+    CNR = meanROI-meanBackground;
+    roiSNRvector(i) = roiSNR;
+    SNRvector(i) = SNR;
+    CNRvector(i) = CNR;
 end
+
+%%%%%%%%%% SEE THE IMAGES %%%%%%%%%%%%%%%
+%%
+name = images(452).name;
+path = strcat('E:\david\R_middle_slices/', name);
+image = im2double(imread(path));
+figure(58)
+imshow(image);
+
+name = images(418).name;
+path = strcat('E:\david\R_middle_slices/', name);
+image = im2double(imread(path));
+figure(59)
+imshow(image);
+
+
 
 %%%%%%%%%% PLOTTING %%%%%%%%%%%%%%%
 %%
-
-% figure(58)
-% imshow(image);
+close all;
 
 figure(1)
 plot(SNRvector);                                      
@@ -159,37 +174,36 @@ boxplot(CNRvector);
 title('CNR box')
 
 figure(7)
-plot(altSNRvector);
+plot(roiSNRvector);
 title('SNR')
 xlabel('Samples')
-ylabel('altSNR')
+ylabel('roiSNR')
 
 figure(8)
-hist(altSNRvector);
-title('altSNR hist')
+hist(roiSNRvector);
+title('roiSNR hist')
 xlabel('altSNR')
 ylabel('Samples')
 
 figure(9)
-boxplot(altSNRvector);
-title('altSNR box')
+boxplot(roiSNRvector);
+title('roiSNR box')
 
 SNRmean = mean(SNRvector);
 CNRmean = mean(CNRvector);
-altSNRmean = mean(altSNRvector);
+roiSNRmean = mean(roiSNRvector);
 
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
-top30 = round(L*0.3);
-[~, snr_top_i] = maxk(SNRvector, top30);
-% [~, snr_top_i] = maxk(altSNRvector, top30);
-[~, cnr_top_i] = maxk(CNRvector, top30);
+portion = round(L*0.3);
+% [~, snr_top_i] = maxk(SNRvector, portion);
+[~, snr_top_i] = maxk(roiSNRvector, portion);
+[~, cnr_top_i] = maxk(CNRvector, portion);
 top_intersection = intersect(snr_top_i, cnr_top_i);
 
-low30 = round(L*0.3);
-[~, snr_low_i] = mink(SNRvector, low30);
-% [~, snr_low_i] = mink(altSNRvector, low30);
-[~, cnr_low_i] = mink(CNRvector, low30);
+% [~, snr_low_i] = mink(SNRvector, portion);
+[~, snr_low_i] = mink(roiSNRvector, portion);
+[~, cnr_low_i] = mink(CNRvector, portion);
 low_intersection = intersect(snr_low_i, cnr_low_i);
 
 %%%%%%%%%%% CLASSIFY INTO FOLDERS %%%%%%%%%%%%
@@ -198,8 +212,8 @@ for i = 1:length(top_intersection)
     i
     index = top_intersection(i);
     name = images(index).name;
-    source = strcat('E:\david\middle_slices/', name);
-    dest = strcat('E:\david\R_high_roi/', name);
+    source = strcat('E:\david\R_middle_slices/', name);
+    dest = strcat('E:\david\R_interroi_high/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')
@@ -211,8 +225,8 @@ for i = 1:length(low_intersection)
     i
     index = low_intersection(i);
     name = images(index).name;
-    source = strcat('E:\david\middle_slices/', name);
-    dest = strcat('E:\david\R_low_roi/', name);
+    source = strcat('E:\david\R_middle_slices/', name);
+    dest = strcat('E:\david\R_interroi_low/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')

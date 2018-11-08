@@ -305,6 +305,7 @@ end
 
 %%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
 %%
+close all;
 x = ones(length(SNRvector),1);
 for i = 1:length(x)
     x(i) = i;

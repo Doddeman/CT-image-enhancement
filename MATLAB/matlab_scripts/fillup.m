@@ -1,7 +1,7 @@
 %%%%%%% Fill up high/low folders with all images %%%%%%%%
 % After sampling and classification,
 % use this script to get all the images of one patient
-% into the desired folder depending on its quality. 
+% into the desired class/folder depending on its quality. 
 clear all
 %%
 %get list of low patiens+tf
@@ -39,7 +39,7 @@ high_patients = strsplit(high_images,','); %split into cells
 
 %%
 % excluded = [];
-all_images = dir('E:\david\R_data/*.png');
+all_images = dir('E:\david\R3-R28/*.png');
 for i=1:length(all_images)
    i
    all_name = all_images(i).name;
@@ -48,13 +48,13 @@ for i=1:length(all_images)
    all_tf = all_split{2};
    allpat_tf = strcat(all_patient, '_', all_tf);
    
-   if any(strcmp(high_patients,allpat_tf))
-       source = strcat('E:\david\R_data\', all_name);
-       des = strcat('E:\david\CT-image-enhancement\cycleGAN\datasets\R\trainB\', all_name);
-       copyfile (source, des);
-   elseif any(strcmp(low_patients,allpat_tf))
-       source = strcat('E:\david\R_data\', all_name);
+   if any(strcmp(low_patients,allpat_tf))
+       source = strcat('E:\david\R3-R28\', all_name);
        des = strcat('E:\david\CT-image-enhancement\cycleGAN\datasets\R\trainA\', all_name);
+       copyfile (source, des);
+   elseif any(strcmp(high_patients,allpat_tf))
+       source = strcat('E:\david\R3-R28\', all_name);
+       des = strcat('E:\david\CT-image-enhancement\cycleGAN\datasets\R\trainB\', all_name);
        copyfile (source, des);
 %    else
 %        excluded = [excluded, all_name, ','];
