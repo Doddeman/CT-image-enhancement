@@ -80,11 +80,18 @@ fakeCNRvector = zeros(images_per_epoch,1);
 SNRvector = zeros(n_of_epochs,1);
 CNRvector = zeros(n_of_epochs,1);
 roiSNRvector = zeros(n_of_epochs,1);
+ratioSNRvector = zeros(n_of_epochs,1);
+ratioCNRvector = zeros(n_of_epochs,1);
+ratioroiSNRvector = zeros(n_of_epochs,1);
 UIQIvector = zeros(n_of_epochs,1);
-epochSNR = 0;
-epochCNR = 0;
-epochSNRroi = 0;
-epochUIQI = 0;
+
+SNRepoch = 0;
+CNRepoch = 0;
+roiSNRepoch = 0;
+ratioSNRepoch = 0;
+ratioCNRepoch = 0;
+ratioroiSNRepoch = 0;
+UIQIepoch = 0;
 
 epoch = 1;
 j=1;
@@ -119,7 +126,15 @@ for i = 1:L1
     %of ROI to 2, the background can be found
     origCopy = original;
     origCopy(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
-    %twos = sum(image(:) == 2) %Checking the size of ROI
+    
+    upper_left = grayconnected(origCopy,1,1,0);
+    upper_right = grayconnected(origCopy,1,width,0);
+    lower_left = grayconnected(origCopy,height,1,0);
+    lower_right = grayconnected(origCopy,height,width,0);
+    outside = 2*(upper_left + upper_right + lower_left + lower_right);
+    origCopy = origCopy + outside;
+    
+    %twos = sum(origCopy(:) >= 2) 
     backgroundIndices = origCopy < 2;
     backgroundValues = origCopy(backgroundIndices);
    
@@ -131,7 +146,6 @@ for i = 1:L1
     fakePath = strcat('../to_matlab/fakes_8_50/', fakeName);
     fake = im2double(imread(fakePath));
 %     fake = rgb2gray(fake);
-%     fake(fake<0) = 0;
 
     %Get fake ROI
     [fakeHeight,fakeWidth] = size(fake);
@@ -153,7 +167,9 @@ for i = 1:L1
     %of ROI to 2, the background can be found
     fakeCopy = fake;
     fakeCopy(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
-    %twos = sum(image(:) == 2)
+    fakeCopy = fakeCopy + outside;
+    
+    %twos = sum(fakeCopy(:) >= 2)
     backgroundIndices = fakeCopy < 2;
     backgroundValues = fakeCopy(backgroundIndices);
     
@@ -163,38 +179,64 @@ for i = 1:L1
     originalSNR = originalMeanROI / originalStdBackground;
     fakeSNR = fakeMeanROI / fakeStdBackground;
     SNRdifference = fakeSNR - originalSNR;
+    SNRratio = SNRdifference / originalSNR;
+    if sign(SNRdifference) ~= sign(SNRratio)
+        SNRratio = SNRratio * -1;
+    end
     
     originalCNR = originalMeanROI - originalMeanBackground;
     fakeCNR = fakeMeanROI - fakeMeanBackground;
     CNRdifference = fakeCNR - originalCNR;
+    CNRratio = CNRdifference / originalCNR;
+    if sign(CNRdifference) ~= sign(CNRratio)
+        CNRratio = CNRratio * -1;
+    end
     
     originalSNRroi = originalMeanROI / originalStdROI;
     fakeSNRroi = fakeMeanROI / fakeStdROI;
     roiSNRdiff = fakeSNRroi - originalSNRroi;
-    
-%     twos = sum(original(:) < 0)
-%     twoos = sum(fake(:) < 0 )
+    roiSNRratio = roiSNRdiff / originalSNRroi;
+    if sign(roiSNRdiff) ~= sign(roiSNRratio)
+        roiSNRratio = roiSNRratio * -1;
+    end 
     [UIQI ~] = get_uiqi(original, fake);
-%     [qi qi_map] = img_qi(img1, img2)
 
-    epochSNR = epochSNR + SNRdifference;
-    epochCNR = epochCNR + CNRdifference;
-    epochSNRroi = epochSNRroi + roiSNRdiff;
-    epochUIQI = epochUIQI + UIQI;
+    SNRepoch = SNRepoch + SNRdifference;
+    CNRepoch = CNRepoch + CNRdifference;
+    roiSNRepoch = roiSNRepoch + roiSNRdiff;
+    
+    ratioSNRepoch = ratioSNRepoch + SNRratio;
+    ratioCNRepoch = ratioCNRepoch + CNRratio;
+    ratioroiSNRepoch = ratioroiSNRepoch + roiSNRratio;
+    
+    UIQIepoch = UIQIepoch + UIQI;
 
     if mod(i,images_per_epoch) == 0 % End of epoch?
-        meanSNR = epochSNR / images_per_epoch;
-        meanCNR = epochCNR / images_per_epoch;
-        meanSNRroi = epochSNRroi / images_per_epoch;
-        meanUIQI = epochUIQI / images_per_epoch;
+        %CALCULATE MEAN
+        meanSNR = SNRepoch / images_per_epoch;
+        meanCNR = CNRepoch / images_per_epoch;
+        meanSNRroi = roiSNRepoch / images_per_epoch;
+        meanSNRratio = ratioSNRepoch / images_per_epoch;
+        meanCNRratio = ratioCNRepoch / images_per_epoch;
+        meanSNRratioroi = ratioroiSNRepoch / images_per_epoch;
+        meanUIQI = UIQIepoch / images_per_epoch;
+        %ADD TO VECTOR
         SNRvector(epoch) = meanSNR;
         CNRvector(epoch) = meanCNR;
         roiSNRvector(epoch) = meanSNRroi;
+        ratioSNRvector(epoch) = meanSNRratio;
+        ratioCNRvector(epoch) = meanCNRratio;
+        ratioroiSNRvector(epoch) = meanSNRratioroi;
         UIQIvector(epoch) = meanUIQI;
-        epochSNR = 0;
-        epochCNR = 0;
-        epochSNRroi = 0;
-        epochUIQI = 0;
+        %RESET EPOCH VALUE
+        SNRepoch = 0;
+        CNRepoch = 0;
+        roiSNRepoch = 0;
+        ratioSNRepoch = 0;
+        ratioCNRepoch = 0;
+        ratioroiSNRepoch = 0;
+        UIQIepoch = 0;
+        %STEP EPOCH
         epoch = epoch + 1;
     end
     
@@ -313,6 +355,9 @@ end
 SNRtrend = fit(x,SNRvector,'poly2');
 CNRtrend = fit(x,CNRvector,'poly2');
 roiSNRtrend = fit(x,roiSNRvector,'poly2');
+ratioSNRtrend = fit(x,ratioSNRvector,'poly2');
+ratioCNRtrend = fit(x,ratioCNRvector,'poly2');
+ratioroiSNRtrend = fit(x,ratioroiSNRvector,'poly2');
 UIQItrend = fit(x,UIQIvector, 'poly2');
 close all
 
@@ -324,6 +369,14 @@ title('SNR Progression')
 xlabel('Epochs')
 ylabel('SNR difference')
 
+figure(33)
+plot(ratioSNRvector);
+hold on
+plot(ratioSNRtrend, x, ratioSNRvector);
+title('SNR ratio Progression')
+xlabel('Epochs')
+ylabel('SNR difference / original SNR')
+
 figure(4)
 plot(CNRvector);
 hold on
@@ -332,6 +385,14 @@ title('CNR Progression')
 xlabel('Epochs')
 ylabel('CNR difference')
 
+figure(44)
+plot(ratioCNRvector);
+hold on
+plot(ratioCNRtrend, x, ratioCNRvector);
+title('CNR ratio Progression')
+xlabel('Epochs')
+ylabel('CNR difference / original CNR')
+
 figure(5)
 plot(roiSNRvector);
 hold on
@@ -339,6 +400,14 @@ plot(roiSNRtrend, x, roiSNRvector);
 title('roi SNR Progression')
 xlabel('Epochs')
 ylabel('SNR difference')
+
+figure(55)
+plot(ratioroiSNRvector);
+hold on
+plot(ratioroiSNRtrend, x, ratioroiSNRvector);
+title('roi SNR ratio Progression')
+xlabel('Epochs')
+ylabel('SNR difference / original SNR')
 
 figure(6)
 plot(UIQIvector);
@@ -361,5 +430,6 @@ close all;
 %Save workspace
 total_epochs = 17;
 saved_every = 4;
-save('batch8_17epochs', 'SNRvector', 'CNRvector', 'roiSNRvector', 'total_epochs', 'saved_every',...
+save('batch8_17epochs', 'SNRvector', 'CNRvector', 'roiSNRvector', 'ratioSNRvector',...
+    'ratioCNRvector', 'ratioroiSNRvector', 'total_epochs', 'saved_every',...
     'UIQIvector', 'origSNRvector', 'fakeSNRvector', 'origCNRvector', 'fakeCNRvector')

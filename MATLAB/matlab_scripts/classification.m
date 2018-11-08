@@ -102,11 +102,19 @@ for i = 1:L
 
     %Values in image range from 0 to 1, so by assigning the values
     %of ROI to 2, the background can be found
-    background = image;
-    background(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
-    %twos = sum(image(:) == 2)
-    backgroundIndices = background < 2;
-    backgroundValues = background(backgroundIndices);
+    copy = image;
+    copy(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
+    
+    upper_left = grayconnected(origCopy,1,1,0);
+    upper_right = grayconnected(origCopy,1,width,0);
+    lower_left = grayconnected(origCopy,height,1,0);
+    lower_right = grayconnected(origCopy,height,width,0);
+    outside = 2*(upper_left + upper_right + lower_left + lower_right);
+    copy = copy + outside;
+    
+    %twos = sum(copy(:) >= 2)
+    backgroundIndices = copy < 2;
+    backgroundValues = copy(backgroundIndices);
 
     meanROI = mean(ROI(:));
     sdROI = std(ROI(:));
