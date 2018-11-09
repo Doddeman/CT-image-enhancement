@@ -5,74 +5,6 @@
 % https://www.mathworks.com/help/images/ref/grayconnected.html
 % https://www.mathworks.com/help/images/morphological-filtering.html
 
-%%%%%%%%% SECTION FOR TESTING CALCULATIONS %%%%%%%%%%%%%%
-%%
-clear all
-%close all
-
-% Get images and sort after date modified
-%images = dir('E:\david\development\MATLAB\to_matlab/*.png');
-images = dir('../to_matlab/*.png');
-fields = fieldnames(images);
-cells = struct2cell(images);
-sz = size(cells);
-cells = reshape(cells, sz(1), []);
-cells = cells';
-% Sort by field "date"
-cells = sortrows(cells, 3);
-cells = reshape(cells', sz);
-images = cell2struct(cells, fields, 1);
-
-path = strcat('..\to_matlab/', images(4000).name);
-image = imread(path);
-image = im2double(image);
-image = rgb2gray(image);
-
-[height,width] = size(image);
-c = centerOfMass(image);
-centerX = round(c(2));
-centerY = round(c(1));
-mask = double(zeros(height, width));
-maskSizeX = round(width/4);
-maskSizeY = round(height/4);
-mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
-ROI = image .* mask;
-ROI = ROI(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
-
-figure(1)
-%imshow(image), [0 255];
-imshow(image);
-hold on;
-plot(centerX,centerY,'r.');
-
-figure(2)
-imshow(ROI);
-title('masked image')
-
-copy = image;
-copy(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
-%sum = sum(copy(:) == 2)
-backgroundIndices = find(copy < 2);
-backgroundValues = image(backgroundIndices);
-
-figure(3)
-imshow(copy);
-
-meanROI = mean(mean(ROI));
-%sdROI = std(masked(:));
-sdBackground = std(backgroundValues);
-meanBackground = mean(backgroundValues);
-
-signal = meanROI;
-contrast = meanROI-meanBackground;
-noise = sdBackground;
-SNR = signal/noise;
-c = contrast/noise;
-CNR = log10(c);
-cnr2 = 20*CNR;
-%cnr = meanROI-sdBackground;
-
-
 %%%%%%%%%%%%% CALCULATE SNR AND CNR %%%%%%%%%%%%%%%%%%%%%
 %%
 clear all;
@@ -105,12 +37,15 @@ for i = 1:L
     copy = image;
     copy(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
     
-    upper_left = grayconnected(origCopy,1,1,0);
-    upper_right = grayconnected(origCopy,1,width,0);
-    lower_left = grayconnected(origCopy,height,1,0);
-    lower_right = grayconnected(origCopy,height,width,0);
+    upper_left = grayconnected(copy,1,1,0);
+    upper_right = grayconnected(copy,1,width,0);
+    lower_left = grayconnected(copy,height,1,0);
+    lower_right = grayconnected(copy,height,width,0);
     outside = 2*(upper_left + upper_right + lower_left + lower_right);
     copy = copy + outside;
+    
+    figure(999)
+    imshow(copy);
     
     %twos = sum(copy(:) >= 2)
     backgroundIndices = copy < 2;
@@ -131,13 +66,13 @@ end
 
 %%%%%%%%%% SEE THE IMAGES %%%%%%%%%%%%%%%
 %%
-name = images(452).name;
+name = images(169).name;
 path = strcat('E:\david\R_middle_slices/', name);
 image = im2double(imread(path));
 figure(58)
 imshow(image);
 
-name = images(418).name;
+name = images(260).name;
 path = strcat('E:\david\R_middle_slices/', name);
 image = im2double(imread(path));
 figure(59)
@@ -203,7 +138,7 @@ roiSNRmean = mean(roiSNRvector);
 
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
-portion = round(L*0.3);
+portion = round(L*0.5);
 % [~, snr_top_i] = maxk(SNRvector, portion);
 [~, snr_top_i] = maxk(roiSNRvector, portion);
 [~, cnr_top_i] = maxk(CNRvector, portion);
@@ -221,7 +156,7 @@ for i = 1:length(top_intersection)
     index = top_intersection(i);
     name = images(index).name;
     source = strcat('E:\david\R_middle_slices/', name);
-    dest = strcat('E:\david\R_interroi_high/', name);
+    dest = strcat('E:\david\R_intersect_high/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')
@@ -234,7 +169,7 @@ for i = 1:length(low_intersection)
     index = low_intersection(i);
     name = images(index).name;
     source = strcat('E:\david\R_middle_slices/', name);
-    dest = strcat('E:\david\R_interroi_low/', name);
+    dest = strcat('E:\david\R_intersect_low/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')
