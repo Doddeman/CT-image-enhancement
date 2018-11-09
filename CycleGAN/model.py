@@ -162,16 +162,16 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                print ("Total step counter:", counter)
-                '''print("saving batch", idx)
+                #print ("Total step counter:", counter)
+                print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_R_8/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_R_8/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
                     copyfile(batch_files[i][0], original_path)
@@ -183,7 +183,7 @@ class cyclegan(object):
                     # To get SNR etc.
                     #resh = resize(resh, (256,256), anti_aliasing=True)
                     scipy.misc.imsave(fake_path, resh)
-                    batch_counter += 1'''
+                    batch_counter += 1
 
                 #snr = signaltonoise(fake_B)
                 ###########################
@@ -209,7 +209,8 @@ class cyclegan(object):
                     print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 #Create a model checkpoint at save_freq
-                #if np.mod(counter, args.save_freq) == 2: #Switched it to save every epoch
+                #if np.mod(counter, args.save_freq) == 2:
+                #Switched it to save every epoch
                 if np.mod(counter, batch_idxs) == 0:
                     print("Epoch checkpoint at counter =", counter)
                     self.save(args.checkpoint_dir, epoch, counter)

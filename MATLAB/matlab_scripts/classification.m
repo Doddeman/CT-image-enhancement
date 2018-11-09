@@ -138,7 +138,7 @@ roiSNRmean = mean(roiSNRvector);
 
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
-portion = round(L*0.5);
+portion = round(L*0.2);
 % [~, snr_top_i] = maxk(SNRvector, portion);
 [~, snr_top_i] = maxk(roiSNRvector, portion);
 [~, cnr_top_i] = maxk(CNRvector, portion);
