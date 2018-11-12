@@ -55,9 +55,9 @@ end
 %% 
 n = 100000;
 figure(80)
-original = originals(n).name
-originalPath = strcat('../to_matlab/origs_8_50/', original);
-imshow(originalPath)
+orig = originals(n).name
+origPath = strcat('../to_matlab/origs_8_50/', orig);
+imshow(origPath)
 
 figure(81)
 fake = fakes(n).name
@@ -99,15 +99,18 @@ for i = 1:L1
     i
     % GET IMAGES ROIS AND BACKGROUNDS
     %Get original
-    originalName = originals(i).name;
-    originalPath = strcat('../to_matlab/origs_8_50/', originalName);
-    original = im2double(imread(originalPath));
+    origName = originals(i).name;
+    origPath = strcat('../to_matlab/origs_8_50/', origName);
+    
+    [origSNR, origCNR, origSNRroi] = get_snr_cnr(origPath);
+    
+    orig = im2double(imread(origPath));
 %     original = imresize(original,[256,256]);
-    original(original<0) = 0;
+    orig(orig<0) = 0;
 
     %Get original ROI
-    [origHeight,origWidth] = size(original);
-    originalC = centerOfMass(original);
+    [origHeight,origWidth] = size(orig);
+    originalC = centerOfMass(orig);
     originalCenterX = round(originalC(2));
     originalCenterY = round(originalC(1));
 
@@ -115,7 +118,7 @@ for i = 1:L1
     maskSizeX = round(origWidth/4);
     maskSizeY = round(origHeight/4);
     mask(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 1;
-    maskedImage = original .* mask;
+    maskedImage = orig .* mask;
     originalROI = maskedImage(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX);
 
     originalMeanROI = mean(originalROI(:));
@@ -124,7 +127,7 @@ for i = 1:L1
     %Get original background.
     %Values in image range from 0 to 1, so by assigning the values
     %of ROI to 2, the background can be found
-    origCopy = original;
+    origCopy = orig;
     origCopy(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
     
     upper_left = grayconnected(origCopy,1,1,0);
@@ -199,7 +202,7 @@ for i = 1:L1
     if sign(roiSNRdiff) ~= sign(roiSNRratio)
         roiSNRratio = roiSNRratio * -1;
     end 
-    [UIQI ~] = get_uiqi(original, fake);
+    [UIQI ~] = get_uiqi(orig, fake);
 
     SNRepoch = SNRepoch + SNRdifference;
     CNRepoch = CNRepoch + CNRdifference;
