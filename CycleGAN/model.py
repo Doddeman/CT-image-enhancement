@@ -128,17 +128,29 @@ class cyclegan(object):
         self.sess.run(init_op)
         self.writer = tf.summary.FileWriter("./events/d32", self.sess.graph)
 
-        counter = 1
-        batch_counter = 0; # for saving images
-        start_time = time.time()
+        ###### Only for locating continued counters #######
+        dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
+        dataB = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainB'))
+        tr_size = min(min(len(dataA), len(dataB)), args.train_size) // self.batch_size
 
         if args.continue_train:
-            if self.load(args.checkpoint_dir):
+            load = self.load(args.checkpoint_dir, test=False)
+            if load[0] == True:
                 print(" [*] Load SUCCESS")
+                init_epoch = int(load[1]) + 1 #iniate training at checkpoint epoch
+                counter = init_epoch*tr_size
+                batch_counter = init_epoch*tr_size*args.batch_size
             else:
                 print(" [!] Load failed...")
+                return
+        else:
+            init_epoch = 0
+            counter = 1
+            batch_counter = 0
 
-        for epoch in range(args.epoch):
+        start_time = time.time()
+
+        for epoch in range(init_epoch, args.epoch):
             dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
             dataB = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainB'))
             np.random.shuffle(dataA)
@@ -162,7 +174,7 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                #print ("Total step counter:", counter)
+                print ("Total step counter:", counter)
                 print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
@@ -170,8 +182,8 @@ class cyclegan(object):
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
                     copyfile(batch_files[i][0], original_path)
@@ -201,7 +213,7 @@ class cyclegan(object):
 
                 counter += 1
                 #Prints info and saves a sample image with print_freq
-                if np.mod(counter, args.print_freq) == 1:
+                if np.mod(counter, args.print_freq) == 0:
                     #self.sample_model(args.sample_dir, epoch, idx, args.load_size, args.fine_size)
                     print(("Epoch: [%2d/%2d] [%4d/%4d] time: %4.4f" % (
                         epoch, args.epoch-1, idx, batch_idxs, time.time() - start_time)))
@@ -230,7 +242,7 @@ class cyclegan(object):
                         os.path.join(checkpoint_dir, model_name),
                         global_step=epoch) #epoch in the name instead of step
 
-    def load(self, checkpoint_dir):
+    def load(self, checkpoint_dir, test=True):
         print(" [*] Reading checkpoint...")
 
         #remove image size from directory name? no it's useful
@@ -246,8 +258,13 @@ class cyclegan(object):
             #ckpt_name = "cyclegan.model-192002" #remove
             print("CHECKPOINT:", ckpt)
             print("CHECKPOINT MODEL:", ckpt_name)
+            init_epoch = ckpt_name[-1]
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
-            return True
+
+            if test:
+                return True
+            else:
+                return True, init_epoch
         else:
             return False
 
