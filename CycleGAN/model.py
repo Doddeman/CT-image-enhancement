@@ -37,7 +37,7 @@ class cyclegan(object):
                                       args.phase == 'train'))
 
         self._build_model()
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(max_to_keep=None) #keeps all
         self.pool = ImagePool(args.max_size)
 
     def _build_model(self):
@@ -228,7 +228,7 @@ class cyclegan(object):
 
         self.saver.save(self.sess,
                         os.path.join(checkpoint_dir, model_name),
-                        global_step=epoch, max_to_keep=None) #epoch in the name instead of step
+                        global_step=epoch) #epoch in the name instead of step
 
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoint...")
@@ -242,7 +242,8 @@ class cyclegan(object):
         #ckpt = tf.train.get_checkpoint_state(checkpoint_dir, latest_filename="cyclegan.model-214002")
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            #ckpt_name = "cyclegan.model-214002" #remove
+
+            #ckpt_name = "cyclegan.model-192002" #remove
             print("CHECKPOINT:", ckpt)
             print("CHECKPOINT MODEL:", ckpt_name)
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
