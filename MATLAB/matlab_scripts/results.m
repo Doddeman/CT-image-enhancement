@@ -5,59 +5,16 @@ clear all
 
 %Get images and sort after date modified
 originals = dir('../to_matlab/origs_8_50/*.png');
-fields = fieldnames(originals);
-cells = struct2cell(originals);
-sz = size(cells);
-cells = reshape(cells, sz(1), []);
-cells = cells';
-% Sort by field "date"
-cells = sortrows(cells, 3);
-cells = reshape(cells', sz);
-originals = cell2struct(cells, fields, 1);
-
 fakes = dir('../to_matlab/fakes_8_50/*.png');
-fields = fieldnames(fakes);
-cells = struct2cell(fakes);
-sz = size(cells);
-cells = reshape(cells, sz(1), []);
-cells = cells';
-% Sort by field "date"
-cells = sortrows(cells, 3);
-cells = reshape(cells', sz);
-fakes = cell2struct(cells, fields, 1);
-
-L1 = length(originals);
-L2 = length(fakes);
-
-if L1 ~= L2
-    disp('Not same length of directories');
-    disp('Terminating script');
-    return
-end
-
-%check for errors
-for i = 1:L1
-    i
-    orig = originals(i).name;
-    orig = strsplit(orig,'_');
-    n1 = orig{4};
-    fak = fakes(i).name;
-    fak = strsplit(fak,'_');
-    n2 = fak{4};
-    if ~strcmp(n1,n2)
-        disp('Not same image!!!');
-        return
-    end
-end
-
+[originals, fakes] = get_data(originals, fakes);
 
 %%%%% Testing
 %% 
 n = 100000;
 figure(80)
 orig = originals(n).name
-origPath = strcat('../to_matlab/origs_8_50/', orig);
-imshow(origPath)
+orig_path = strcat('../to_matlab/origs_8_50/', orig);
+imshow(orig_path)
 
 figure(81)
 fake = fakes(n).name
@@ -72,26 +29,26 @@ images_per_epoch = 12624;
 % images_per_epoch = 4096;
 n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
 
-origSNRvector = zeros(images_per_epoch,1);
-fakeSNRvector = zeros(images_per_epoch,1);
-origCNRvector = zeros(images_per_epoch,1);
-fakeCNRvector = zeros(images_per_epoch,1);
+orig_SNRvector = zeros(images_per_epoch,1);
+fake_SNRvector = zeros(images_per_epoch,1);
+orig_CNRvector = zeros(images_per_epoch,1);
+fake_CNRvector = zeros(images_per_epoch,1);
 
-SNRvector = zeros(n_of_epochs,1);
-CNRvector = zeros(n_of_epochs,1);
-roiSNRvector = zeros(n_of_epochs,1);
-ratioSNRvector = zeros(n_of_epochs,1);
-ratioCNRvector = zeros(n_of_epochs,1);
-ratioroiSNRvector = zeros(n_of_epochs,1);
-UIQIvector = zeros(n_of_epochs,1);
+SNR_vector = zeros(n_of_epochs,1);
+CNR_vector = zeros(n_of_epochs,1);
+roi_SNR_vector = zeros(n_of_epochs,1);
+ratio_SNR_vector = zeros(n_of_epochs,1);
+ratio_CNR_vector = zeros(n_of_epochs,1);
+ratio_roi_SNR_vector = zeros(n_of_epochs,1);
+UIQI_vector = zeros(n_of_epochs,1);
 
-SNRepoch = 0;
-CNRepoch = 0;
-roiSNRepoch = 0;
-ratioSNRepoch = 0;
-ratioCNRepoch = 0;
-ratioroiSNRepoch = 0;
-UIQIepoch = 0;
+SNR_epoch = 0;
+CNR_epoch = 0;
+roi_SNR_epoch = 0;
+ratio_SNR_epoch = 0;
+ratio_CNR_epoch = 0;
+ratio_roi_SNR_epoch = 0;
+UIQI_epoch = 0;
 
 epoch = 1;
 j=1;
@@ -99,334 +56,112 @@ for i = 1:L1
     i
     % GET IMAGES ROIS AND BACKGROUNDS
     %Get original
-    origName = originals(i).name;
-    origPath = strcat('../to_matlab/origs_8_50/', origName);
-    
-    [origSNR, origCNR, origSNRroi] = get_snr_cnr(origPath);
-    
-    orig = im2double(imread(origPath));
-%     original = imresize(original,[256,256]);
-    orig(orig<0) = 0;
+    orig_name = originals(i).name;
+    orig_path = strcat('../to_matlab/origs_8_50/', orig_name); 
+    orig = im2double(imread(orig_path));
+    [orig_mean_ROI, orig_std_ROI, orig_outside, orig_mean_background, ...
+        orig_std_background] = get_roi_background(orig);
 
-    %Get original ROI
-    [origHeight,origWidth] = size(orig);
-    originalC = centerOfMass(orig);
-    originalCenterX = round(originalC(2));
-    originalCenterY = round(originalC(1));
-
-    mask = double(zeros(origHeight, origWidth));
-    maskSizeX = round(origWidth/4);
-    maskSizeY = round(origHeight/4);
-    mask(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 1;
-    maskedImage = orig .* mask;
-    originalROI = maskedImage(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX);
-
-    originalMeanROI = mean(originalROI(:));
-    originalStdROI = std(originalROI(:));
-    
-    %Get original background.
-    %Values in image range from 0 to 1, so by assigning the values
-    %of ROI to 2, the background can be found
-    origCopy = orig;
-    origCopy(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
-    
-    upper_left = grayconnected(origCopy,1,1,0);
-    upper_right = grayconnected(origCopy,1,width,0);
-    lower_left = grayconnected(origCopy,height,1,0);
-    lower_right = grayconnected(origCopy,height,width,0);
-    outside = 2*(upper_left + upper_right + lower_left + lower_right);
-    origCopy = origCopy + outside;
-    
-    %twos = sum(origCopy(:) >= 2) 
-    backgroundIndices = origCopy < 2;
-    backgroundValues = origCopy(backgroundIndices);
-   
-    originalStdBackground = std(backgroundValues);
-    originalMeanBackground = mean(backgroundValues);
-
-    % Get fake image
-    fakeName = fakes(i).name;
-    fakePath = strcat('../to_matlab/fakes_8_50/', fakeName);
-    fake = im2double(imread(fakePath));
-%     fake = rgb2gray(fake);
-
-    %Get fake ROI
-    [fakeHeight,fakeWidth] = size(fake);
-    fakeC = centerOfMass(fake);
-    fakeCenterX = round(fakeC(2));
-    fakeCenterY = round(fakeC(1));
-    mask = double(zeros(fakeHeight, fakeWidth));
-    maskSizeX = round(fakeWidth/4);
-    maskSizeY = round(fakeHeight/4);
-    mask(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 1;
-    maskedImage = fake .* mask;
-    fakeROI = maskedImage(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX);
-    
-    fakeMeanROI = mean(fakeROI(:));
-    fakeStdROI = std(fakeROI(:));
-    
-    %Get fake background.
-    %Values in image range from 0 to 1, so by assigning the values
-    %of ROI to 2, the background can be found
-    fakeCopy = fake;
-    fakeCopy(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
-    fakeCopy = fakeCopy + outside;
-    
-    %twos = sum(fakeCopy(:) >= 2)
-    backgroundIndices = fakeCopy < 2;
-    backgroundValues = fakeCopy(backgroundIndices);
-    
-    fakeStdBackground = std(backgroundValues);
-    fakeMeanBackground = mean(backgroundValues);
-    % START CALCULATIONS
-    originalSNR = originalMeanROI / originalStdBackground;
-    fakeSNR = fakeMeanROI / fakeStdBackground;
-    SNRdifference = fakeSNR - originalSNR;
-    SNRratio = SNRdifference / originalSNR;
-    if sign(SNRdifference) ~= sign(SNRratio)
-        SNRratio = SNRratio * -1;
+    % Get fake
+    fake_name = fakes(i).name;
+    fake_path = strcat('../to_matlab/fakes_8_50/', fake_name);
+    fake = im2double(imread(fake_path));
+    [fake_mean_ROI, fake_std_ROI, ~, fake_mean_background, ...
+        fake_std_background] = get_roi_background(fake, orig_outside); 
+       
+    % CALCULATIONS
+    % SNR
+    orig_SNR = orig_mean_ROI / orig_std_background;
+    fake_SNR = fake_mean_ROI / fake_std_background;
+    SNR_diff = fake_SNR - orig_SNR;
+    SNR_ratio = SNR_diff / orig_SNR;
+    if sign(SNR_diff) ~= sign(SNR_ratio)
+        SNR_ratio = SNR_ratio * -1;
     end
-    
-    originalCNR = originalMeanROI - originalMeanBackground;
-    fakeCNR = fakeMeanROI - fakeMeanBackground;
-    CNRdifference = fakeCNR - originalCNR;
-    CNRratio = CNRdifference / originalCNR;
-    if sign(CNRdifference) ~= sign(CNRratio)
-        CNRratio = CNRratio * -1;
+    SNR_epoch = SNR_epoch + SNR_diff;
+    ratio_SNR_epoch = ratio_SNR_epoch + SNR_ratio;
+    % CNR
+    orig_CNR = orig_mean_ROI - orig_mean_background;
+    fake_CNR = fake_mean_ROI - fake_mean_background;
+    CNR_diff = fake_CNR - orig_CNR;
+    CNR_ratio = CNR_diff / orig_CNR;
+    if sign(CNR_diff) ~= sign(CNR_ratio)
+        CNR_ratio = CNR_ratio * -1;
     end
-    
-    originalSNRroi = originalMeanROI / originalStdROI;
-    fakeSNRroi = fakeMeanROI / fakeStdROI;
-    roiSNRdiff = fakeSNRroi - originalSNRroi;
-    roiSNRratio = roiSNRdiff / originalSNRroi;
-    if sign(roiSNRdiff) ~= sign(roiSNRratio)
-        roiSNRratio = roiSNRratio * -1;
+    CNR_epoch = CNR_epoch + CNR_diff;
+    ratio_CNR_epoch = ratio_CNR_epoch + CNR_ratio;
+    % roi SNR
+    orig_SNR_roi = orig_mean_ROI / orig_std_ROI;
+    fake_SNR_roi = fake_mean_ROI / fakeStdROI;
+    roi_SNR_diff = fake_SNR_roi - orig_SNR_roi;
+    roi_SNR_ratio = roi_SNR_diff / orig_SNR_roi;
+    if sign(roi_SNR_diff) ~= sign(roi_SNR_ratio)
+        roi_SNR_ratio = roi_SNR_ratio * -1;
     end 
-    [UIQI ~] = get_uiqi(orig, fake);
-
-    SNRepoch = SNRepoch + SNRdifference;
-    CNRepoch = CNRepoch + CNRdifference;
-    roiSNRepoch = roiSNRepoch + roiSNRdiff;
-    
-    ratioSNRepoch = ratioSNRepoch + SNRratio;
-    ratioCNRepoch = ratioCNRepoch + CNRratio;
-    ratioroiSNRepoch = ratioroiSNRepoch + roiSNRratio;
-    
-    UIQIepoch = UIQIepoch + UIQI;
+    roi_SNR_epoch = roi_SNR_epoch + roi_SNR_diff;
+    ratio_roi_SNR_epoch = ratio_roi_SNR_epoch + roi_SNR_ratio;
+    % UIQI
+    [UIQI, ~] = get_uiqi(orig, fake);
+    UIQI_epoch = UIQI_epoch + UIQI;
 
     if mod(i,images_per_epoch) == 0 % End of epoch?
         %CALCULATE MEAN
-        meanSNR = SNRepoch / images_per_epoch;
-        meanCNR = CNRepoch / images_per_epoch;
-        meanSNRroi = roiSNRepoch / images_per_epoch;
-        meanSNRratio = ratioSNRepoch / images_per_epoch;
-        meanCNRratio = ratioCNRepoch / images_per_epoch;
-        meanSNRratioroi = ratioroiSNRepoch / images_per_epoch;
-        meanUIQI = UIQIepoch / images_per_epoch;
+        mean_SNR = SNR_epoch / images_per_epoch;
+        mean_CNR = CNR_epoch / images_per_epoch;
+        mean_SNR_roi = roi_SNR_epoch / images_per_epoch;
+        mean_SNR_ratio = ratio_SNR_epoch / images_per_epoch;
+        mean_CNR_ratio = ratio_CNR_epoch / images_per_epoch;
+        mean_SNR_ratio_roi = ratio_roi_SNR_epoch / images_per_epoch;
+        mean_UIQI = UIQI_epoch / images_per_epoch;
         %ADD TO VECTOR
-        SNRvector(epoch) = meanSNR;
-        CNRvector(epoch) = meanCNR;
-        roiSNRvector(epoch) = meanSNRroi;
-        ratioSNRvector(epoch) = meanSNRratio;
-        ratioCNRvector(epoch) = meanCNRratio;
-        ratioroiSNRvector(epoch) = meanSNRratioroi;
-        UIQIvector(epoch) = meanUIQI;
+        SNR_vector(epoch) = mean_SNR;
+        CNR_vector(epoch) = mean_CNR;
+        roi_SNR_vector(epoch) = mean_SNR_roi;
+        ratio_SNR_vector(epoch) = mean_SNR_ratio;
+        ratio_CNR_vector(epoch) = mean_CNR_ratio;
+        ratio_roi_SNR_vector(epoch) = mean_SNR_ratio_roi;
+        UIQI_vector(epoch) = mean_UIQI;
         %RESET EPOCH VALUE
-        SNRepoch = 0;
-        CNRepoch = 0;
-        roiSNRepoch = 0;
-        ratioSNRepoch = 0;
-        ratioCNRepoch = 0;
-        ratioroiSNRepoch = 0;
-        UIQIepoch = 0;
+        SNR_epoch = 0;
+        CNR_epoch = 0;
+        roi_SNR_epoch = 0;
+        ratio_SNR_epoch = 0;
+        ratio_CNR_epoch = 0;
+        ratio_roi_SNR_epoch = 0;
+        UIQI_epoch = 0;
         %STEP EPOCH
         epoch = epoch + 1;
     end
     
     %If it is the last epoch, start saving for BA
     if i > (L1-images_per_epoch+1)
-        origSNRvector(j) = originalSNR;
-        fakeSNRvector(j) = fakeSNR;
-        origCNRvector(j) = originalCNR;
-        fakeCNRvector(j) = fakeCNR;
+        orig_SNRvector(j) = orig_SNR;
+        fake_SNRvector(j) = fake_SNR;
+        orig_CNRvector(j) = orig_CNR;
+        fake_CNRvector(j) = fake_CNR;
         j = j + 1;
     end
     
 end
 
-% %%%%%%%%%%%ONLY GET BLAND ALTMAN %%%%%%%%%%%%%%%%%%%%%
-% %%
-% origSNRvector = zeros(images_per_epoch,1);
-% fakeSNRvector = zeros(images_per_epoch,1);
-% origCNRvector = zeros(images_per_epoch,1);
-% fakeCNRvector = zeros(images_per_epoch,1);
-% ind = 1;
-% one_epoch = L1-images_per_epoch
-% for i = one_epoch+1:L1
-%     i
-%     %Get original
-%     originalName = originals(i).name;
-%     originalPath = strcat('../to_matlab/origs_R_8/', originalName);
-%     original = im2double(imread(originalPath));
-% %     original = imresize(original,[256,256]);
-%     original(original<0) = 0;
-%     
-% 
-%     %Get original ROI
-%     [origHeight,origWidth] = size(original);
-%     originalC = centerOfMass(original);
-%     originalCenterX = round(originalC(2));
-%     originalCenterY = round(originalC(1));
-% 
-%     mask = double(zeros(origHeight, origWidth));
-%     maskSizeX = round(origWidth/4);
-%     maskSizeY = round(origHeight/4);
-%     mask(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 1;
-%     maskedImage = original .* mask;
-%     originalROI = maskedImage(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX);
-% 
-%     originalMeanROI = mean(originalROI(:));
-%     originalStdROI = std(originalROI(:));
-%     
-%     %Get original background.
-%     %Values in image range from 0 to 1, so by assigning the values
-%     %of ROI to 2, the background can be found
-%     origCopy = original;
-%     origCopy(originalCenterY-maskSizeY:originalCenterY+maskSizeY,originalCenterX-maskSizeX:originalCenterX+maskSizeX) = 2;
-%     %twos = sum(image(:) == 2)
-%     backgroundIndices = origCopy < 2;
-%     backgroundValues = origCopy(backgroundIndices);
-%    
-%     originalStdBackground = std(backgroundValues);
-%     originalMeanBackground = mean(backgroundValues);
-% 
-%     % Get fake image
-%     fakeName = fakes(i).name;
-%     fakePath = strcat('../to_matlab/fakes_R_8/', fakeName);
-%     fake = im2double(imread(fakePath));
-% %     fake = rgb2gray(fake);
-% %     fake(fake<0) = 0;
-% 
-%     %Get fake ROI
-%     [fakeHeight,fakeWidth] = size(fake);
-%     fakeC = centerOfMass(fake);
-%     fakeCenterX = round(fakeC(2));
-%     fakeCenterY = round(fakeC(1));
-%     mask = double(zeros(fakeHeight, fakeWidth));
-%     maskSizeX = round(fakeWidth/4);
-%     maskSizeY = round(fakeHeight/4);
-%     mask(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 1;
-%     maskedImage = fake .* mask;
-%     fakeROI = maskedImage(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX);
-%     
-%     fakeMeanROI = mean(fakeROI(:));
-%     fakeStdROI = std(fakeROI(:));
-%     
-%     %Get fake background.
-%     %Values in image range from 0 to 1, so by assigning the values
-%     %of ROI to 2, the background can be found
-%     fakeCopy = fake;
-%     fakeCopy(fakeCenterY-maskSizeY:fakeCenterY+maskSizeY,fakeCenterX-maskSizeX:fakeCenterX+maskSizeX) = 2;
-%     %twos = sum(image(:) == 2)
-%     backgroundIndices = fakeCopy < 2;
-%     backgroundValues = fakeCopy(backgroundIndices);
-%     
-%     fakeStdBackground = std(backgroundValues);
-%     fakeMeanBackground = mean(backgroundValues);
-%     
-%     originalSNR = originalMeanROI / originalStdBackground;
-%     fakeSNR = fakeMeanROI / fakeStdBackground;
-%         
-%     originalCNR = originalMeanROI - originalMeanBackground;
-%     fakeCNR = fakeMeanROI - fakeMeanBackground;
-%     
-%     origSNRvector(ind) = originalSNR;
-%     fakeSNRvector(ind) = fakeSNR;
-%     origCNRvector(ind) = originalCNR;
-%     fakeCNRvector(ind) = fakeCNR;
-%     
-%     ind = ind + 1;
-% end
-
 %%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
 %%
 close all;
-x = ones(length(SNRvector),1);
-for i = 1:length(x)
-    x(i) = i;
-end
-SNRtrend = fit(x,SNRvector,'poly2');
-CNRtrend = fit(x,CNRvector,'poly2');
-roiSNRtrend = fit(x,roiSNRvector,'poly2');
-ratioSNRtrend = fit(x,ratioSNRvector,'poly2');
-ratioCNRtrend = fit(x,ratioCNRvector,'poly2');
-ratioroiSNRtrend = fit(x,ratioroiSNRvector,'poly2');
-UIQItrend = fit(x,UIQIvector, 'poly2');
-close all
 
-figure(3)
-plot(SNRvector);
-hold on
-plot(SNRtrend, x, SNRvector);
-title('SNR Progression')
-xlabel('Epochs')
-ylabel('SNR difference')
-
-figure(33)
-plot(ratioSNRvector);
-hold on
-plot(ratioSNRtrend, x, ratioSNRvector);
-title('SNR ratio Progression')
-xlabel('Epochs')
-ylabel('SNR difference / original SNR')
-
-figure(4)
-plot(CNRvector);
-hold on
-plot(CNRtrend, x, CNRvector);
-title('CNR Progression')
-xlabel('Epochs')
-ylabel('CNR difference')
-
-figure(44)
-plot(ratioCNRvector);
-hold on
-plot(ratioCNRtrend, x, ratioCNRvector);
-title('CNR ratio Progression')
-xlabel('Epochs')
-ylabel('CNR difference / original CNR')
-
-figure(5)
-plot(roiSNRvector);
-hold on
-plot(roiSNRtrend, x, roiSNRvector);
-title('roi SNR Progression')
-xlabel('Epochs')
-ylabel('SNR difference')
-
-figure(55)
-plot(ratioroiSNRvector);
-hold on
-plot(ratioroiSNRtrend, x, ratioroiSNRvector);
-title('roi SNR ratio Progression')
-xlabel('Epochs')
-ylabel('SNR difference / original SNR')
-
-figure(6)
-plot(UIQIvector);
-hold on
-plot(UIQItrend, x, UIQIvector);
-title('UIQI Progression')
-xlabel('Epochs')
-ylabel('UIQI')
-
+do_plot(SNR_vector, 1, 'SNR', 'SNR difference');
+do_plot(ratio_SNR_vector, 2, 'SNR ratio', 'SNR difference / original SNR');
+do_plot(CNR_vector, 3, 'CNR', 'CNR difference');
+do_plot(ratio_CNR_vector, 4, 'CNR', 'CNR difference / original SNR');
+% do_plot(roi_SNR_vector, 5, 'ROI-based SNR', 'SNR difference');
+% do_plot(ratio_roi_SNR_vector, 6, 'ROI-based SNR ratio', 'SNR difference / originals SNR');
+do_plot(UIQI_vector, 7, 'UIQI', 'UIQI');
 
 %%%%%%%%%%%%%% BLAND ALTMAN AND CORRELATION %%%%%%%%%%%%
 %%
 close all;
-[rpc, ~, stats] = BlandAltman(origSNRvector, fakeSNRvector, {'Orig SNR','Fake SNR'},...
+[rpc, ~, stats] = BlandAltman(orig_SNRvector, fake_SNRvector, {'Orig SNR','Fake SNR'},...
     'Correlation plot and Bland Altman', 'data', 'baYLimMode', 'Auto', 'data1Mode', 'Truth');
-[rpc, ~, stats] = BlandAltman(origCNRvector, fakeCNRvector, {'Orig CNR','Fake CNR'},...
+[rpc, ~, stats] = BlandAltman(orig_CNRvector, fake_CNRvector, {'Orig CNR','Fake CNR'},...
     'Correlation plot and Bland Altman', 'data', 'baYLimMode', 'Auto', 'data1Mode', 'Truth');
 
 %%
