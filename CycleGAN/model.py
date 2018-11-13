@@ -242,7 +242,7 @@ class cyclegan(object):
                         os.path.join(checkpoint_dir, model_name),
                         global_step=epoch) #epoch in the name instead of step
 
-    def load(self, checkpoint_dir, test=True):
+    def load(self, checkpoint_dir, checkpoint=-1, test=True):
         print(" [*] Reading checkpoint...")
 
         #remove image size from directory name? no it's useful
@@ -253,9 +253,11 @@ class cyclegan(object):
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
         #ckpt = tf.train.get_checkpoint_state(checkpoint_dir, latest_filename="cyclegan.model-214002")
         if ckpt and ckpt.model_checkpoint_path:
-            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-
-            #ckpt_name = "cyclegan.model-192002" #remove
+            if checkpoint == -1:
+                ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            else:  #Test each epoch
+                ckpt_name = "cyclegan.model-" + checkpoint #not sure how
+                #ckpt_name = "cyclegan.model-192002" #remove
             print("CHECKPOINT:", ckpt)
             print("CHECKPOINT MODEL:", ckpt_name)
             init_epoch = ckpt_name[-1]
@@ -300,7 +302,7 @@ class cyclegan(object):
 
         print("number of test files:", len(sample_files))
 
-        if self.load(args.checkpoint_dir):
+        if self.load(args.checkpoint_dir, checkpoint=args.checkpoint):
             print(" [*] Load SUCCESS")
         else:
             print(" [!] Load failed...")
@@ -326,7 +328,8 @@ class cyclegan(object):
             #But will probably only receive 256x256
             sample_image = np.array(sample_image).astype(np.float32)
             image_path = os.path.join(args.test_dir,
-                                      '{0}_{1}'.format(args.which_direction, os.path.basename(sample_file)))
+                                      '{0}_{1}_{2}'.format(args.which_direction,
+                                      os.path.basename(sample_file), args.checkpoint))#add checkpoint to file name
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
 
             #Resize image to 256x256
