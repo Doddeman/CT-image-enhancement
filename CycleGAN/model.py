@@ -174,7 +174,7 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                print ("Total step counter:", counter)
+                #print ("Total step counter:", counter)
                 print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
@@ -182,8 +182,8 @@ class cyclegan(object):
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
                     copyfile(batch_files[i][0], original_path)
@@ -260,7 +260,7 @@ class cyclegan(object):
                 #ckpt_name = "cyclegan.model-192002" #remove
             print("CHECKPOINT:", ckpt)
             print("CHECKPOINT MODEL:", ckpt_name)
-            init_epoch = ckpt_name[-1]
+            init_epoch = ckpt_name.split('-')[-1]
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
 
             if test:
