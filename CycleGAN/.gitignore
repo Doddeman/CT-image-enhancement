@@ -7,4 +7,5 @@ events/*
 logs/*
 sample/*
 test/*
+/*
 /test.py

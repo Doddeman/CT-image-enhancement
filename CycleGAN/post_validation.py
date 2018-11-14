@@ -1,6 +1,6 @@
 import os
 
-os.system("python script2.py")
-
-for i in range(80):
-    os.system("python main.py --phase=test --checkpoint=%d" % i)
+for i in range(34): #How many epochs/checkpoints?
+	print("\n STARTING NEW TEST")
+	print("python main.py --phase=test --checkpoint=%d" % i)
+	os.system("python main.py --phase=test --checkpoint=%d" % i)

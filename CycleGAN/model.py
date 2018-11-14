@@ -251,15 +251,15 @@ class cyclegan(object):
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
         print("CHECKPOINT_DIR:", checkpoint_dir)
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+        #doesnt work
         #ckpt = tf.train.get_checkpoint_state(checkpoint_dir, latest_filename="cyclegan.model-214002")
         if ckpt and ckpt.model_checkpoint_path:
             if checkpoint == -1:
                 ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
             else:  #Test each epoch
-                ckpt_name = "cyclegan.model-" + checkpoint #not sure how
-                #ckpt_name = "cyclegan.model-192002" #remove
+                ckpt_name = "cyclegan.model-" + str(checkpoint)
             print("CHECKPOINT:", ckpt)
-            print("CHECKPOINT MODEL:", ckpt_name)
+            print("CHECKPOINT NAME:", ckpt_name)
             init_epoch = ckpt_name.split('-')[-1]
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
 
@@ -328,8 +328,8 @@ class cyclegan(object):
             #But will probably only receive 256x256
             sample_image = np.array(sample_image).astype(np.float32)
             image_path = os.path.join(args.test_dir,
-                                      '{0}_{1}_{2}'.format(args.which_direction,
-                                      os.path.basename(sample_file), args.checkpoint))#add checkpoint to file name
+                                      '{0}_{1}_{2}'.format(args.checkpoint, args.which_direction, 
+                                      os.path.basename(sample_file))) #added checkpoint to file name
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
 
             #Resize image to 256x256
@@ -339,7 +339,7 @@ class cyclegan(object):
                 fake_resized = np.reshape(fake_resized, (output_size, output_size)) #get rid of color channel
                 #print("FAKE_REIZED2:", fake_resized.shape)
                 scipy.misc.imsave(image_path, fake_resized)'''
-
+            #print("IMAGE PATH:", image_path)
             save_images(fake_img, [1, 1], image_path)
             index.write("<td>%s</td>" % os.path.basename(image_path))
             index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
