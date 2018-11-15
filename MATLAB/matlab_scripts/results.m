@@ -4,30 +4,30 @@ clear all
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_8_50/*.png');
-fakes = dir('../to_matlab/fakes_8_50/*.png');
-[originals, fakes] = get_data(originals, fakes);
+originals = dir('../to_matlab/origs_terrible/*.png');
+fakes = dir('../to_matlab/fakes_terrible/*.png');
+[originals, fakes, L] = get_data(originals, fakes);
 
 %%%%% Testing
 %% 
-n = 100000;
+n = 40090;
 figure(80)
 orig = originals(n).name
-orig_path = strcat('../to_matlab/origs_8_50/', orig);
+orig_path = strcat('../to_matlab/origs_terrible/', orig);
 imshow(orig_path)
 
 figure(81)
 fake = fakes(n).name
-fakepath = strcat('../to_matlab/fakes_8_50/', fake);
+fakepath = strcat('../to_matlab/fakes_terrible/', fake);
 imshow(fakepath)
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
-% images_per_epoch = 1478;
+images_per_epoch = 1478;
 % images_per_epoch = 12628;
-images_per_epoch = 12624;
+% images_per_epoch = 12624;
 % images_per_epoch = 4096;
-n_of_epochs = floor(L1/images_per_epoch); %data sampled from X epochs 
+n_of_epochs = floor(L/images_per_epoch); %data sampled from X epochs 
 
 % orig_SNRvector = zeros(images_per_epoch,1);
 % fake_SNRvector = zeros(images_per_epoch,1);
@@ -56,19 +56,19 @@ UIQI_epoch = 0;
 
 epoch = 1;
 j=1;
-for i = 1:L1
+for i = 1:L
     i
     % GET IMAGES ROIS AND BACKGROUNDS
     %Get original
     orig_name = originals(i).name;
-    orig_path = strcat('../to_matlab/origs_8_50/', orig_name); 
+    orig_path = strcat('../to_matlab/origs_terrible/', orig_name); 
     orig = im2double(imread(orig_path));
     [orig_mean_ROI, orig_std_ROI, orig_outside, orig_mean_background, ...
         orig_std_background] = get_roi_background(orig);
 
     % Get fake
     fake_name = fakes(i).name;
-    fake_path = strcat('../to_matlab/fakes_8_50/', fake_name);
+    fake_path = strcat('../to_matlab/fakes_terrible/', fake_name);
     fake = im2double(imread(fake_path));
     [fake_mean_ROI, fake_std_ROI, ~, fake_mean_background, ...
         fake_std_background] = get_roi_background(fake, orig_outside); 
@@ -98,7 +98,7 @@ for i = 1:L1
     ratio_CNR_epoch = ratio_CNR_epoch + CNR_ratio;
     % roi SNR
     orig_SNR_roi = orig_mean_ROI / orig_std_ROI;
-    fake_SNR_roi = fake_mean_ROI / fakeStdROI;
+    fake_SNR_roi = fake_mean_ROI / fake_std_ROI;
     roi_SNR_diff = fake_SNR_roi - orig_SNR_roi;
     roi_SNR_ratio = roi_SNR_diff / orig_SNR_roi;
     if sign(roi_SNR_diff) ~= sign(roi_SNR_ratio)
@@ -146,7 +146,7 @@ for i = 1:L1
     end
     
     %If it is the last epoch, start saving for BA
-%     if i > (L1-images_per_epoch+1)
+%     if i > (L-images_per_epoch+1)
 %         orig_SNRvector(j) = orig_SNR;
 %         fake_SNRvector(j) = fake_SNR;
 %         orig_CNRvector(j) = orig_CNR;
@@ -158,15 +158,17 @@ end
 
 %%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
 %%
+
+%maybe redo this to one single function call
 close all;
 
 do_plot(SNR_vector,'' , 1, 'SNR', 'SNR difference');
 do_plot(ratio_SNR_vector,'', 2, 'SNR ratio', 'SNR difference / original SNR');
 do_plot(CNR_vector,'', 3, 'CNR', 'CNR difference');
 do_plot(ratio_CNR_vector,'', 4, 'CNR', 'CNR difference / original CNR');
-% do_plot(roi_SNR_vector,'', 5, 'ROI-based SNR', 'SNR difference');
-% do_plot(ratio_roi_SNR_vector,'', 6, 'ROI-based SNR ratio', 'SNR difference / original SNR');
-% do_plot(UIQI_vector,'', 7, 'UIQI', 'UIQI');
+do_plot(roi_SNR_vector,'', 5, 'ROI-based SNR', 'SNR difference');
+do_plot(ratio_roi_SNR_vector,'', 6, 'ROI-based SNR ratio', 'SNR difference / original SNR');
+do_plot(UIQI_vector,'', 7, 'UIQI', 'UIQI');
 do_plot(orig_SNR_vector,ratio_SNR_vector,8,'SNR ratio vs orig','SNR difference / original SNR','orig');
 do_plot(orig_CNR_vector,ratio_CNR_vector,9,'CNR ratio vs orig','CNR difference / original CNR','orig');
 

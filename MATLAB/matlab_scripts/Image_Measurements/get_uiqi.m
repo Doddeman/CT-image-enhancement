@@ -65,6 +65,16 @@ if (nargin == 1 | nargin > 3)
    return;
 end
 
+[height,width] = size(orig);
+if height ~= 256 | width ~= 256
+    orig = imresize(orig,[256,256]);
+end
+
+[~,~,dim] = size(fake);
+if dim ~= 1
+    fake = rgb2gray(fake);
+end
+
 if (size(orig) ~= size(fake))
    quality = -Inf;
    quality_map = -1*ones(size(orig));
@@ -74,6 +84,8 @@ end
 if (nargin == 2)  % sliding window, B by B
    block_size = 8;
 end
+
+
 
 N = block_size.^2;
 sum2_filter = ones(block_size);

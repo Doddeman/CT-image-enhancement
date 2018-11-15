@@ -1,11 +1,14 @@
 function [mean_ROI,std_ROI, outside, mean_background,std_background] = get_roi_background(image, orig_outside)
 
 [height,width,dim] = size(image);
-% image = imresize(image,[256,256]);
-% image(image<0) = 0;
+if height ~= 256 | width ~= 256
+    image = imresize(image,[256,256]);
+    [height,width] = size(image);
+end
 if dim ~= 1
     image = rgb2gray(image);
 end
+image(image<0) = 0;
 
 %%%%%% ROI %%%%%%%
 C = centerOfMass(image);

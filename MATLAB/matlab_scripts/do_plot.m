@@ -8,13 +8,16 @@ end
 trend = fit(x,vec1,'poly2');
 
 figure(nr)
-plot(vec1,vec2);
-hold on
-plot(trend, x, vec1);
 title(tit)
 if nargin == 5
+    plot(vec1,vec2);
     xlabel('Epochs')
+    hold on
+    plot(trend, x, vec1);
 else
+    plot(x,vec2);
     xlabel(xlab)
 end
 ylabel(ylab)
+
+%what am i doing

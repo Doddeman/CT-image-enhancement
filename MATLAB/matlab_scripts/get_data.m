@@ -1,4 +1,4 @@
-function [r_origs, r_fakes] = get_data(origs, fakes)
+function [r_origs, r_fakes, L1] = get_data(origs, fakes)
 
 fields = fieldnames(origs);
 cells = struct2cell(origs);
