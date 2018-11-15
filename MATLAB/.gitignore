@@ -1,5 +1,6 @@
 to_matlab
 *.asv
 matlab_scripts/test.m
+matlab_scripts/test2.m
 matlab_scripts/artifacts
 matlab_scripts/clean

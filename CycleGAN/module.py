@@ -138,12 +138,18 @@ def generator_resnet(image, options, reuse=False, name="generator"):
 
 
 def abs_criterion(in_, target):
+    print("aaaabbbs")
+    print("in_", in_, "target", target)
     return tf.reduce_mean(tf.abs(in_ - target))
 
 
 def mae_criterion(in_, target):
+    print("maeee wun shinderu")
+    print("in_", in_, "target", target)
     return tf.reduce_mean((in_-target)**2)
 
 
 def sce_criterion(logits, labels):
+    print("sce po fann")
+    print("in_", in_, "target", target)
     return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels))
