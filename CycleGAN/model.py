@@ -50,13 +50,21 @@ class cyclegan(object):
         self.real_A = self.real_data[:, :, :, :self.input_c_dim]
         self.real_B = self.real_data[:, :, :, self.input_c_dim:self.input_c_dim + self.output_c_dim]
 
+        #real_A -> generatorA2B -> fake_B
         self.fake_B = self.generator(self.real_A, self.options, False, name="generatorA2B")
+        #fake_B -> generatorB2A -> fake_A_
         self.fake_A_ = self.generator(self.fake_B, self.options, False, name="generatorB2A")
+        #real_B -> generatorB2A -> fake_A
         self.fake_A = self.generator(self.real_B, self.options, True, name="generatorB2A")
+        #fake_A -> generatorA2B -> fake_B_
         self.fake_B_ = self.generator(self.fake_A, self.options, True, name="generatorA2B")
 
+        #discriminatorB
         self.DB_fake = self.discriminator(self.fake_B, self.options, reuse=False, name="discriminatorB")
+        #discriminatorA
         self.DA_fake = self.discriminator(self.fake_A, self.options, reuse=False, name="discriminatorA")
+
+        #generatorA2B loss = mse(DB_fake - ones_like(DB.fake)) + abs(real_A-fake_A_) + abs(real_B-fake_B_) 
         self.g_loss_a2b = self.criterionGAN(self.DB_fake, tf.ones_like(self.DB_fake)) \
             + self.L1_lambda * abs_criterion(self.real_A, self.fake_A_) \
             + self.L1_lambda * abs_criterion(self.real_B, self.fake_B_)
@@ -114,7 +122,8 @@ class cyclegan(object):
         t_vars = tf.trainable_variables()
         self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
         self.g_vars = [var for var in t_vars if 'generator' in var.name]
-        #for var in t_vars: print(var.name)
+        print("D_VARS")
+        for var in self.d_vars: print(var.name)
 
     def train(self, args):
         """Train cyclegan"""
@@ -174,8 +183,8 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                #print ("Total step counter:", counter)
-                print("saving batch", idx)
+                print ("Total step counter:", counter)
+                '''print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
@@ -195,7 +204,7 @@ class cyclegan(object):
                     # To get SNR etc.
                     #resh = resize(resh, (256,256), anti_aliasing=True)
                     scipy.misc.imsave(fake_path, resh)
-                    batch_counter += 1
+                    batch_counter += 1'''
 
                 #snr = signaltonoise(fake_B)
                 ###########################
