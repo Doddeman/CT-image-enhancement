@@ -151,5 +151,5 @@ def mae_criterion(in_, target):
 
 def sce_criterion(logits, labels):
     print("sce po fann")
-    print("in_", in_, "target", target)
+    print("logits", logits, "labels", labels)
     return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=labels))
