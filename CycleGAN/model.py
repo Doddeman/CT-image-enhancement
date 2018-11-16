@@ -64,7 +64,7 @@ class cyclegan(object):
         #discriminatorA
         self.DA_fake = self.discriminator(self.fake_A, self.options, reuse=False, name="discriminatorA")
 
-        #generatorA2B loss = mse(DB_fake - ones_like(DB.fake)) + abs(real_A-fake_A_) + abs(real_B-fake_B_) 
+        #generatorA2B loss = mse(DB_fake - ones_like(DB.fake)) + abs(real_A-fake_A_) + abs(real_B-fake_B_)
         self.g_loss_a2b = self.criterionGAN(self.DB_fake, tf.ones_like(self.DB_fake)) \
             + self.L1_lambda * abs_criterion(self.real_A, self.fake_A_) \
             + self.L1_lambda * abs_criterion(self.real_B, self.fake_B_)
@@ -183,16 +183,16 @@ class cyclegan(object):
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
-                print ("Total step counter:", counter)
-                '''print("saving batch", idx)
+                #print ("Total step counter:", counter)
+                print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_sampled_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_full_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_full_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
                     copyfile(batch_files[i][0], original_path)
@@ -204,7 +204,7 @@ class cyclegan(object):
                     # To get SNR etc.
                     #resh = resize(resh, (256,256), anti_aliasing=True)
                     scipy.misc.imsave(fake_path, resh)
-                    batch_counter += 1'''
+                    batch_counter += 1
 
                 #snr = signaltonoise(fake_B)
                 ###########################
@@ -337,7 +337,7 @@ class cyclegan(object):
             #But will probably only receive 256x256
             sample_image = np.array(sample_image).astype(np.float32)
             image_path = os.path.join(args.test_dir,
-                                      '{0}_{1}_{2}'.format(args.checkpoint, args.which_direction, 
+                                      '{0}_{1}_{2}'.format(args.checkpoint, args.which_direction,
                                       os.path.basename(sample_file))) #added checkpoint to file name
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
 
