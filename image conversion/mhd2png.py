@@ -81,7 +81,7 @@ if __name__ == "__main__":
     else:
         # User defined settings
         sourceDir = 'mhd'
-        destDir = 'to_png'
+        destDir = 'png_'
         print('Using predefined sourceDir and destDir')
 
     # Call the function
