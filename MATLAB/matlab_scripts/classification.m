@@ -9,151 +9,117 @@
 %%
 clear all;
 close all;
-images = dir('E:\david\R_middle_slices/*.png');
+% images = dir('E:\david\R_middle_slices/*.png');
+images = dir('C:\Users\davwa\Desktop\R3-R28_middle_slices/*.png');
 L = length(images);
-SNRvector = zeros(length(images),1);
-roiSNRvector = zeros(length(images),1);
-CNRvector = zeros(length(images),1);
+SNR_vector = zeros(length(images),1);
+% roi_SNR_vector = zeros(length(images),1);
+CNR_vector = zeros(length(images),1);
 for i = 1:L
     i
     name = images(i).name;
-    path = strcat('E:\david\R_middle_slices/', name);
+    path = strcat('C:\Users\davwa\Desktop\R3-R28_middle_slices/', name);
     image = im2double(imread(path));
-    %image = rgb2gray(image);
-    [height,width] = size(image);
-    c = centerOfMass(image);
-    centerX = round(c(2));
-    centerY = round(c(1));
-   
-    mask = double(zeros(height, width));
-    maskSizeX = round(width/4);
-    maskSizeY = round(height/4);
-    mask(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 1;
-    ROI = image .* mask;
-    ROI = ROI(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX);
-
-    %Values in image range from 0 to 1, so by assigning the values
-    %of ROI to 2, the background can be found
-    copy = image;
-    copy(centerY-maskSizeY:centerY+maskSizeY,centerX-maskSizeX:centerX+maskSizeX) = 2;
+    [mean_ROI, std_ROI, ~, mean_background, ...
+        std_background] = get_roi_background(image);    
     
-    upper_left = grayconnected(copy,1,1,0);
-    upper_right = grayconnected(copy,1,width,0);
-    lower_left = grayconnected(copy,height,1,0);
-    lower_right = grayconnected(copy,height,width,0);
-    outside = 2*(upper_left + upper_right + lower_left + lower_right);
-    copy = copy + outside;
-    
-    figure(999)
-    imshow(copy);
-    
-    %twos = sum(copy(:) >= 2)
-    backgroundIndices = copy < 2;
-    backgroundValues = copy(backgroundIndices);
-
-    meanROI = mean(ROI(:));
-    sdROI = std(ROI(:));
-    sdBackground = std(backgroundValues);
-    meanBackground = mean(backgroundValues);
-
-    roiSNR = meanROI/sdROI;
-    SNR = meanROI/sdBackground;
-    CNR = meanROI-meanBackground;
-    roiSNRvector(i) = roiSNR;
-    SNRvector(i) = SNR;
-    CNRvector(i) = CNR;
+%     roi_SNR = meanROI/sdROI;
+    SNR = mean_ROI / std_background;
+    CNR = mean_ROI - mean_background;
+%     roi_SNR_vector(i) = roi_SNR;
+    SNR_vector(i) = SNR;
+    CNR_vector(i) = CNR;
 end
 
 %%%%%%%%%% SEE THE IMAGES %%%%%%%%%%%%%%%
 %%
 name = images(169).name;
-path = strcat('E:\david\R_middle_slices/', name);
+path = strcat('C:\Users\davwa\Desktop\R3-R28_middle_slices/', name);
 image = im2double(imread(path));
 figure(58)
 imshow(image);
 
 name = images(260).name;
-path = strcat('E:\david\R_middle_slices/', name);
+path = strcat('C:\Users\davwa\Desktop\R3-R28_middle_slices/', name);
 image = im2double(imread(path));
 figure(59)
 imshow(image);
-
-
 
 %%%%%%%%%% PLOTTING %%%%%%%%%%%%%%%
 %%
 close all;
 
 figure(1)
-plot(SNRvector);                                      
+plot(SNR_vector);                                      
 title('SNR')
 xlabel('Samples')
 ylabel('SNR')
 
 figure(2)
-hist(SNRvector);
+hist(SNR_vector);
 title('SNR hist')
 xlabel('SNR')
 ylabel('Samples')
 
 figure(3)
-boxplot(SNRvector);
+boxplot(SNR_vector);
 title('SNR box')
 
 figure(4)
-plot(CNRvector);
+plot(CNR_vector);
 title('CNR')
 xlabel('Samples')
 ylabel('CNR')
 
 figure(5)
-hist(CNRvector);
+hist(CNR_vector);
 title('CNR hist')
 xlabel('CNR')
 ylabel('Samples')
 
 figure(6)
-boxplot(CNRvector);
+boxplot(CNR_vector);
 title('CNR box')
 
-figure(7)
-plot(roiSNRvector);
-title('SNR')
-xlabel('Samples')
-ylabel('roiSNR')
+% figure(7)
+% plot(roiSNRvector);
+% title('SNR')
+% xlabel('Samples')
+% ylabel('roiSNR')
+% 
+% figure(8)
+% hist(roiSNRvector);
+% title('roiSNR hist')
+% xlabel('altSNR')
+% ylabel('Samples')
+% 
+% figure(9)
+% boxplot(roiSNRvector);
+% title('roiSNR box')
 
-figure(8)
-hist(roiSNRvector);
-title('roiSNR hist')
-xlabel('altSNR')
-ylabel('Samples')
-
-figure(9)
-boxplot(roiSNRvector);
-title('roiSNR box')
-
-SNRmean = mean(SNRvector);
-CNRmean = mean(CNRvector);
-roiSNRmean = mean(roiSNRvector);
+SNRmean = mean(SNR_vector);
+CNRmean = mean(CNR_vector);
+% roiSNRmean = mean(roiSNRvector);
 
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
-portion = round(L*0.2);
+top_portion = round(L*0.2);
 % [~, snr_top_i] = maxk(SNRvector, portion);
-[~, snr_top_i] = maxk(roiSNRvector, portion);
-[~, cnr_top_i] = maxk(CNRvector, portion);
+% [~, snr_top_i] = maxk(roiSNRvector, top_portion);
+[~, cnr_top_i] = maxk(CNR_vector, top_portion);
 top_intersection = intersect(snr_top_i, cnr_top_i);
 
+bottom_portion = round(L*0.8);
 % [~, snr_low_i] = mink(SNRvector, portion);
-[~, snr_low_i] = mink(roiSNRvector, portion);
-[~, cnr_low_i] = mink(CNRvector, portion);
+% [~, snr_low_i] = mink(roiSNRvector, bottom_portion);
+[~, cnr_low_i] = mink(CNR_vector, bottom_portion);
 low_intersection = intersect(snr_low_i, cnr_low_i);
 
 %%%%%%%%%%% CLASSIFY INTO FOLDERS %%%%%%%%%%%%
 %%
-for i = 1:length(top_intersection)
+for i = 1:length(cnr_top_i)
     i
-    index = top_intersection(i);
+    index = cnr_top_i(i);
     name = images(index).name;
     source = strcat('E:\david\R_middle_slices/', name);
     dest = strcat('E:\david\R_intersect_high/', name);
@@ -164,9 +130,9 @@ for i = 1:length(top_intersection)
     end    
 end
 
-for i = 1:length(low_intersection)
+for i = 1:length(cnr_low_i)
     i
-    index = low_intersection(i);
+    index = cnr_low_i(i);
     name = images(index).name;
     source = strcat('E:\david\R_middle_slices/', name);
     dest = strcat('E:\david\R_intersect_low/', name);
