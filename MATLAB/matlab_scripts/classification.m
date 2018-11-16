@@ -12,7 +12,7 @@ close all;
 % images = dir('E:\david\R_middle_slices/*.png');
 images = dir('C:\Users\davwa\Desktop\R3-R28_middle_slices/*.png');
 L = length(images);
-SNR_vector = zeros(length(images),1);
+% SNR_vector = zeros(length(images),1);
 % roi_SNR_vector = zeros(length(images),1);
 CNR_vector = zeros(length(images),1);
 for i = 1:L
@@ -24,10 +24,10 @@ for i = 1:L
         std_background] = get_roi_background(image);    
     
 %     roi_SNR = meanROI/sdROI;
-    SNR = mean_ROI / std_background;
+%     SNR = mean_ROI / std_background;
     CNR = mean_ROI - mean_background;
 %     roi_SNR_vector(i) = roi_SNR;
-    SNR_vector(i) = SNR;
+%     SNR_vector(i) = SNR;
     CNR_vector(i) = CNR;
 end
 
@@ -49,21 +49,21 @@ imshow(image);
 %%
 close all;
 
-figure(1)
-plot(SNR_vector);                                      
-title('SNR')
-xlabel('Samples')
-ylabel('SNR')
-
-figure(2)
-hist(SNR_vector);
-title('SNR hist')
-xlabel('SNR')
-ylabel('Samples')
-
-figure(3)
-boxplot(SNR_vector);
-title('SNR box')
+% figure(1)
+% plot(SNR_vector);                                      
+% title('SNR')
+% xlabel('Samples')
+% ylabel('SNR')
+% 
+% figure(2)
+% hist(SNR_vector);
+% title('SNR hist')
+% xlabel('SNR')
+% ylabel('Samples')
+% 
+% figure(3)
+% boxplot(SNR_vector);
+% title('SNR box')
 
 figure(4)
 plot(CNR_vector);
@@ -97,23 +97,23 @@ title('CNR box')
 % boxplot(roiSNRvector);
 % title('roiSNR box')
 
-SNRmean = mean(SNR_vector);
+% SNRmean = mean(SNR_vector);
 CNRmean = mean(CNR_vector);
 % roiSNRmean = mean(roiSNRvector);
 
 %%%%%%%%%%%% FIND 30% TOP & BOTTOM %%%%%%%%%%%%%
 %%
-top_portion = round(L*0.2);
+top_portion = round(L*0.3);
 % [~, snr_top_i] = maxk(SNRvector, portion);
 % [~, snr_top_i] = maxk(roiSNRvector, top_portion);
 [~, cnr_top_i] = maxk(CNR_vector, top_portion);
-top_intersection = intersect(snr_top_i, cnr_top_i);
+% top_intersection = intersect(snr_top_i, cnr_top_i);
 
-bottom_portion = round(L*0.8);
+bottom_portion = round(L*0.7);
 % [~, snr_low_i] = mink(SNRvector, portion);
 % [~, snr_low_i] = mink(roiSNRvector, bottom_portion);
 [~, cnr_low_i] = mink(CNR_vector, bottom_portion);
-low_intersection = intersect(snr_low_i, cnr_low_i);
+% low_intersection = intersect(snr_low_i, cnr_low_i);
 
 %%%%%%%%%%% CLASSIFY INTO FOLDERS %%%%%%%%%%%%
 %%
@@ -121,24 +121,25 @@ for i = 1:length(cnr_top_i)
     i
     index = cnr_top_i(i);
     name = images(index).name;
-    source = strcat('E:\david\R_middle_slices/', name);
-    dest = strcat('E:\david\R_intersect_high/', name);
+    source = strcat('C:\Users\davwa\Desktop\R3-R28_middle_slices/', name);
+    dest = strcat('C:\Users\davwa\Desktop\R_top/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')
         return
     end    
 end
-
+j = i;
 for i = 1:length(cnr_low_i)
-    i
+    j
     index = cnr_low_i(i);
     name = images(index).name;
-    source = strcat('E:\david\R_middle_slices/', name);
-    dest = strcat('E:\david\R_intersect_low/', name);
+    source = strcat('C:\Users\davwa\Desktop\R3-R28_middle_slices/', name);
+    dest = strcat('C:\Users\davwa\Desktop\R_bottom/', name);
     [status, msg, ~] = copyfile(source, dest);
     if ~strcmp(msg,'')
         disp('PROBLEM')
         return
-    end    
+    end
+    j = j + 1;
 end
