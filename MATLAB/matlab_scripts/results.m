@@ -42,16 +42,12 @@ SNR_vector = zeros(n_of_epochs,1);
 ratio_SNR_vector = zeros(n_of_epochs,1);
 CNR_vector = zeros(n_of_epochs,1);
 ratio_CNR_vector = zeros(n_of_epochs,1);
-% roi_SNR_vector = zeros(n_of_epochs,1);
-% ratio_roi_SNR_vector = zeros(n_of_epochs,1);
 UIQI_vector = zeros(n_of_epochs,1);
 
 SNR_epoch = 0;
 ratio_SNR_epoch = 0;
 CNR_epoch = 0;
 ratio_CNR_epoch = 0;
-% roi_SNR_epoch = 0;
-% ratio_roi_SNR_epoch = 0;
 UIQI_epoch = 0;
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
@@ -97,16 +93,6 @@ for i = 1:L
     end
     CNR_epoch = CNR_epoch + CNR_diff;
     ratio_CNR_epoch = ratio_CNR_epoch + CNR_ratio;
-    % roi SNR
-%     orig_SNR_roi = orig_mean_ROI / orig_std_ROI;
-%     fake_SNR_roi = fake_mean_ROI / fake_std_ROI;
-%     roi_SNR_diff = fake_SNR_roi - orig_SNR_roi;
-%     roi_SNR_ratio = roi_SNR_diff / orig_SNR_roi;
-%     if sign(roi_SNR_diff) ~= sign(roi_SNR_ratio)
-%         roi_SNR_ratio = roi_SNR_ratio * -1;
-%     end 
-%     roi_SNR_epoch = roi_SNR_epoch + roi_SNR_diff;
-%     ratio_roi_SNR_epoch = ratio_roi_SNR_epoch + roi_SNR_ratio;
     % UIQI
     [UIQI, ~] = get_uiqi(orig, fake);
     UIQI_epoch = UIQI_epoch + UIQI;
@@ -117,24 +103,18 @@ for i = 1:L
         mean_SNR_ratio = ratio_SNR_epoch / images_per_epoch;
         mean_CNR = CNR_epoch / images_per_epoch;
         mean_CNR_ratio = ratio_CNR_epoch / images_per_epoch;
-%         mean_SNR_roi = roi_SNR_epoch / images_per_epoch;           
-%         mean_SNR_ratio_roi = ratio_roi_SNR_epoch / images_per_epoch;
         mean_UIQI = UIQI_epoch / images_per_epoch;
         %ADD TO VECTOR
         SNR_vector(epoch) = mean_SNR;
         ratio_SNR_vector(epoch) = mean_SNR_ratio;
         CNR_vector(epoch) = mean_CNR;
         ratio_CNR_vector(epoch) = mean_CNR_ratio;
-%         roi_SNR_vector(epoch) = mean_SNR_roi;        
-%         ratio_roi_SNR_vector(epoch) = mean_SNR_ratio_roi;
         UIQI_vector(epoch) = mean_UIQI;
         %RESET EPOCH VALUE
         SNR_epoch = 0;
         ratio_SNR_epoch = 0;
         CNR_epoch = 0;
         ratio_CNR_epoch = 0;
-%         roi_SNR_epoch = 0;
-%         ratio_roi_SNR_epoch = 0;
         UIQI_epoch = 0;
         %STEP EPOCH
         epoch = epoch + 1;
@@ -159,8 +139,6 @@ do_plot(SNR_vector , 1, 'SNR', 'SNR difference');
 do_plot(ratio_SNR_vector, 2, 'SNR ratio', 'SNR difference / original SNR');
 do_plot(CNR_vector, 3, 'CNR', 'CNR difference');
 do_plot(ratio_CNR_vector, 4, 'CNR', 'CNR difference / original CNR (percentage development)');
-% do_plot(roi_SNR_vector, 5, 'ROI-based SNR', 'SNR difference');
-% do_plot(ratio_roi_SNR_vector, 6, 'ROI-based SNR ratio', 'SNR difference / original SNR');
 do_plot(UIQI_vector, 7, 'UIQI', 'UIQI');
 
 %%%%%%%%%%%%%% BLAND ALTMAN AND CORRELATION %%%%%%%%%%%%
@@ -189,6 +167,6 @@ title('CNR ratio vs original values')
 %Save workspace
 total_epochs = 17;
 saved_every = 4;
-save('batch8_17epochs', 'SNRvector', 'CNRvector', 'roiSNRvector', 'ratioSNRvector',...
-    'ratioCNRvector', 'ratioroiSNRvector', 'total_epochs', 'saved_every',...
-    'UIQIvector', 'origSNRvector', 'fakeSNRvector', 'origCNRvector', 'fakeCNRvector')
+save('batch8_17epochs', 'SNRvector', 'CNRvector', 'ratioSNRvector',...
+    'ratioCNRvector', 'total_epochs', 'saved_every', 'UIQIvector', ...
+    'origSNRvector', 'fakeSNRvector', 'origCNRvector', 'fakeCNRvector')
