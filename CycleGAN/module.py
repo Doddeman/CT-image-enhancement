@@ -142,11 +142,14 @@ def abs_criterion(in_, target):
     #print("in_", in_, "target", target)
     return tf.reduce_mean(tf.abs(in_ - target))
 
-
-def mae_criterion(in_, target):
+#this definitely looks like MSE to me
+def mae_criterion(in_, target, DB_fake=False):
     #print("maeee wun shinderu")
     #print("in_", in_, "target", target)
-    return tf.reduce_mean((in_-target)**2)
+    if db:
+        return tf.reduce_mean(((in_-target)**2)+(100/signaltonoise(in_)**2))
+    else:
+        return tf.reduce_mean((in_-target)**2))
 
 
 def sce_criterion(logits, labels):
