@@ -56,6 +56,7 @@ UIQI_epoch = 0;
 
 %%%%%%%%%%%%%% GIANT FOR LOOP, FILL VECTORS %%%%%%%%%%%%
 %%
+size = 256;
 epoch = 1;
 j=1;
 for i = 1:L
@@ -69,21 +70,18 @@ for i = 1:L
         orig_name = originals(i).name;
     end
     orig_path = strcat('../to_matlab/origs_terrible/', orig_name); 
-    orig = im2double(imread(orig_path));
-    [orig_mean_ROI, orig_std_ROI, orig_outside, orig_mean_background, ...
-        orig_std_background] = get_roi_background(orig);
+    orig = get_image(orig_path);
+    orig_outside = get_outside(orig, size, size);
+    [orig_SNR, orig_CNR] = get_SNR_CNR(orig, orig_outside, size, size);
 
     % Get fake
     fake_name = fakes(i).name;
     fake_path = strcat('../to_matlab/fakes_terrible/', fake_name);
-    fake = im2double(imread(fake_path));
-    [fake_mean_ROI, fake_std_ROI, ~, fake_mean_background, ...
-        fake_std_background] = get_roi_background(fake, orig_outside); 
+    fake = get_image(fake_path);
+    [fake_SNR, fake_CNR] = get_SNR_CNR(fake, orig_outside, size, size); 
        
     % CALCULATIONS
     % SNR
-    orig_SNR = orig_mean_ROI / orig_std_background;
-    fake_SNR = fake_mean_ROI / fake_std_background;
     SNR_diff = fake_SNR - orig_SNR;
     SNR_ratio = SNR_diff / orig_SNR;
     if sign(SNR_diff) ~= sign(SNR_ratio)
@@ -92,8 +90,6 @@ for i = 1:L
     SNR_epoch = SNR_epoch + SNR_diff;
     ratio_SNR_epoch = ratio_SNR_epoch + SNR_ratio;
     % CNR
-    orig_CNR = orig_mean_ROI - orig_mean_background;
-    fake_CNR = fake_mean_ROI - fake_mean_background;
     CNR_diff = fake_CNR - orig_CNR;
     CNR_ratio = CNR_diff / orig_CNR;
     if sign(CNR_diff) ~= sign(CNR_ratio)
@@ -152,7 +148,6 @@ for i = 1:L
         fake_CNR_vector(j) = fake_CNR;
         j = j + 1;
     end
-    
 end
 
 %%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
