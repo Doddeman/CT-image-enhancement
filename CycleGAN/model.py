@@ -64,37 +64,53 @@ class cyclegan(object):
         #discriminatorA
         self.DA_fake = self.discriminator(self.fake_A, self.options, reuse=False, name="discriminatorA")
 
-        #generatorA2B loss = mse(DB_fake - ones_like(DB.fake)) + abs(real_A-fake_A_) + abs(real_B-fake_B_)
+        #generatorA2B loss = mse(DB_fake) + abs(real_A-fake_A_) + abs(real_B-fake_B_)
         self.g_loss_a2b = self.criterionGAN(self.DB_fake, tf.ones_like(self.DB_fake)) \
             + self.L1_lambda * abs_criterion(self.real_A, self.fake_A_) \
             + self.L1_lambda * abs_criterion(self.real_B, self.fake_B_)
+        #generatorB2A loss = mse(DA_fake) + abs(real_A-fake_A_) + abs(real_B-fake_B_)
         self.g_loss_b2a = self.criterionGAN(self.DA_fake, tf.ones_like(self.DA_fake)) \
             + self.L1_lambda * abs_criterion(self.real_A, self.fake_A_) \
             + self.L1_lambda * abs_criterion(self.real_B, self.fake_B_)
+        #generator loss = mse(DA_fake) + mse(DB_fake) + abs(real_A-fake_A_) + abs(real_B-fake_B_)
         self.g_loss = self.criterionGAN(self.DA_fake, tf.ones_like(self.DA_fake)) \
             + self.criterionGAN(self.DB_fake, tf.ones_like(self.DB_fake)) \
             + self.L1_lambda * abs_criterion(self.real_A, self.fake_A_) \
             + self.L1_lambda * abs_criterion(self.real_B, self.fake_B_)
 
+        #fake_A_sample
         self.fake_A_sample = tf.placeholder(tf.float32,
                                             [None, self.image_size, self.image_size,
                                              self.input_c_dim], name='fake_A_sample')
+        #fake_B_sample
         self.fake_B_sample = tf.placeholder(tf.float32,
                                             [None, self.image_size, self.image_size,
                                              self.output_c_dim], name='fake_B_sample')
+        #real_B -> DB -> DB_real
         self.DB_real = self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
+        #real_A -> DA -> DA_real
         self.DA_real = self.discriminator(self.real_A, self.options, reuse=True, name="discriminatorA")
+        #fake_B_sample -> DB -> DB_fake_sample
         self.DB_fake_sample = self.discriminator(self.fake_B_sample, self.options, reuse=True, name="discriminatorB")
+        #fake_A_sample -> DA -> DA_fake_sample
         self.DA_fake_sample = self.discriminator(self.fake_A_sample, self.options, reuse=True, name="discriminatorA")
 
+        #DB_loss_real = mse(DB_real)
         self.db_loss_real = self.criterionGAN(self.DB_real, tf.ones_like(self.DB_real))
-        self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample))
+        #DB_loss_fake = mse(DB_fake_sample). This loss should probably include SNR & CNR
+        self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample), DB_fake=True)
+        #Average DB loss = (real+fake)/2
         self.db_loss = (self.db_loss_real + self.db_loss_fake) / 2
+        #DA_loss_real = mse(DA_real)
         self.da_loss_real = self.criterionGAN(self.DA_real, tf.ones_like(self.DA_real))
+        #DA_loss_fake = mse(DA_fake_sample)
         self.da_loss_fake = self.criterionGAN(self.DA_fake_sample, tf.zeros_like(self.DA_fake_sample))
+        #Average DB loss = (real+fake)/2
         self.da_loss = (self.da_loss_real + self.da_loss_fake) / 2
+        #Total D loss = DA loss + DB loss
         self.d_loss = self.da_loss + self.db_loss
 
+        # I think these are only for tensorboard
         self.g_loss_a2b_sum = tf.summary.scalar("g_loss_a2b", self.g_loss_a2b)
         self.g_loss_b2a_sum = tf.summary.scalar("g_loss_b2a", self.g_loss_b2a)
         self.g_loss_sum = tf.summary.scalar("g_loss", self.g_loss)
