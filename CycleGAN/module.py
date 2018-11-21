@@ -146,10 +146,10 @@ def abs_criterion(in_, target):
 def mae_criterion(in_, target, DB_fake=False):
     #print("maeee wun shinderu")
     #print("in_", in_, "target", target)
-    if db:
+    '''if DB_fake:
         return tf.reduce_mean(((in_-target)**2)+(100/signaltonoise(in_)**2))
-    else:
-        return tf.reduce_mean((in_-target)**2))
+    else:'''
+    return tf.reduce_mean((in_-target)**2)
 
 
 def sce_criterion(logits, labels):

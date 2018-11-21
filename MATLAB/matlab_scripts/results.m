@@ -4,11 +4,11 @@
 %close all
 
 %Get images and sort after date modified
-originals = dir('../to_matlab/origs_terrible/*.png');
-fakes = dir('../to_matlab/fakes_terrible/*.png');
-% originals = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/*.png');
-% fakes = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Quality/*.png');
-test = false; 
+% originals = dir('../to_matlab/origs_terrible/*.png');
+% fakes = dir('../to_matlab/fakes_terrible/*.png');
+originals = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/*.png');
+fakes = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Quality/*.png');
+test = true; 
 [originals, fakes, L] = get_data(originals, fakes, test);
 
 %%%%% Testing
@@ -26,7 +26,8 @@ imshow(fakepath)
 
 %%%%%%%%%%%%%% INITIATE DATA STRUCTURES %%%%%%%%%%%%
 %%
-images_per_epoch = 1478;
+images_per_epoch = 1818;
+% images_per_epoch = 1478;
 % images_per_epoch = 12628;
 % images_per_epoch = 12624;
 % images_per_epoch = 4096;

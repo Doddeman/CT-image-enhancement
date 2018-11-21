@@ -334,11 +334,10 @@ class cyclegan(object):
             return
 
         # write html for visual comparison
-        index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
-        print("path:", index_path)
+        '''index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
         index = open(index_path, "w")
         index.write("<html><body><table><tr>")
-        index.write("<th>name</th><th>input</th><th>output</th></tr>")
+        index.write("<th>name</th><th>input</th><th>output</th></tr>")'''
 
         out_var, in_var = (self.testB, self.test_A) if args.which_direction == 'AtoB' else (
             self.testA, self.test_B)
@@ -366,11 +365,11 @@ class cyclegan(object):
                 scipy.misc.imsave(image_path, fake_resized)'''
             #print("IMAGE PATH:", image_path)
             save_images(fake_img, [1, 1], image_path)
-            index.write("<td>%s</td>" % os.path.basename(image_path))
+            '''index.write("<td>%s</td>" % os.path.basename(image_path))
             index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
                 '..' + os.path.sep + sample_file)))
             index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
                 '..' + os.path.sep + image_path)))
-            index.write("</tr>")
+            index.write("</tr>")'''
             file_counter += 1
-        index.close()
+        #index.close()
