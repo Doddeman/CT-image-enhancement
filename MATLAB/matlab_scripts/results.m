@@ -13,7 +13,7 @@ test = true;
 
 %%%%% Testing
 %% 
-n = 40090;
+n = 1700;
 figure(80)
 orig = originals(n).name
 orig_path = strcat('../to_matlab/origs_terrible/', orig);
@@ -66,14 +66,14 @@ for i = 1:L
     else
         orig_name = originals(i).name;
     end
-    orig_path = strcat('../to_matlab/origs_terrible/', orig_name); 
+    orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/', orig_name); 
     orig = get_image(orig_path);
     orig_outside = get_outside(orig, size, size);
     [orig_SNR, orig_CNR] = get_SNR_CNR(orig, orig_outside, size, size);
 
     % Get fake
     fake_name = fakes(i).name;
-    fake_path = strcat('../to_matlab/fakes_terrible/', fake_name);
+    fake_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Quality/', fake_name);
     fake = get_image(fake_path);
     [fake_SNR, fake_CNR] = get_SNR_CNR(fake, orig_outside, size, size); 
        
@@ -137,9 +137,9 @@ end
 close all;
 
 do_plot(SNR_vector , 1, 'SNR', 'SNR difference');
-do_plot(ratio_SNR_vector, 2, 'SNR ratio', 'SNR difference / original SNR');
+do_plot(ratio_SNR_vector, 2, 'SNR ratio', 'Percentage development');
 do_plot(CNR_vector, 3, 'CNR', 'CNR difference');
-do_plot(ratio_CNR_vector, 4, 'CNR', 'CNR difference / original CNR (percentage development)');
+do_plot(ratio_CNR_vector, 4, 'CNR ratio', 'Percentage development');
 do_plot(UIQI_vector, 7, 'UIQI', 'UIQI');
 
 %%%%%%%%%%%%%% BLAND ALTMAN AND CORRELATION %%%%%%%%%%%%
@@ -156,18 +156,32 @@ ratio_SNR_last_vector = diff_SNR_last_vector ./ orig_SNR_vector;
 ratio_CNR_last_vector = diff_CNR_last_vector ./ orig_CNR_vector;
 
 figure(10)
-% plot(orig_SNR_vector, diff_SNR_last_vector,'*')
-plot(orig_SNR_vector, ratio_SNR_last_vector,'*')
-title('SNR ratio vs original values')
+plot(orig_SNR_vector, diff_SNR_last_vector,'*')
+title('SNR diff vs original values')
+xlabel('Originals SNR')
+ylabel('SNR diff')
 
 figure(11)
-% plot(orig_CNR_vector, diff_CNR_last_vector,'*')
+plot(orig_CNR_vector, diff_CNR_last_vector,'*')
+title('CNR diff vs original values')
+xlabel('Originals CNR')
+ylabel('CNR diff')
+
+figure(12)
+plot(orig_SNR_vector, ratio_SNR_last_vector,'*')
+title('SNR ratio vs original values')
+xlabel('Originals SNR')
+ylabel('SNR ratio')
+
+figure(13)
 plot(orig_CNR_vector, ratio_CNR_last_vector,'*')
 title('CNR ratio vs original values')
+xlabel('Originals CNR')
+ylabel('CNR ratio')
 %%
 %Save workspace
-total_epochs = 17;
-saved_every = 4;
-save('batch8_17epochs', 'SNRvector', 'CNRvector', 'ratioSNRvector',...
-    'ratioCNRvector', 'total_epochs', 'saved_every', 'UIQIvector', ...
-    'origSNRvector', 'fakeSNRvector', 'origCNRvector', 'fakeCNRvector')
+total_epochs = 80;
+saved_every = 1;
+save('sample_R_test', 'total_epochs', 'saved_every', 'images_per_epoch', ...
+    'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',... 
+    'UIQI_vector', 'orig_SNR_vector', 'fake_SNR_vector', 'orig_CNR_vector', 'fake_CNR_vector')
