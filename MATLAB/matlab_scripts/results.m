@@ -69,13 +69,13 @@ for i = 1:L
     orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/', orig_name); 
     orig = get_image(orig_path);
     orig_outside = get_outside(orig, size, size);
-    [orig_SNR, orig_CNR] = get_SNR_CNR(orig, orig_outside, size, size);
+    [orig_SNR,orig_CNR] = get_SNR_CNR(orig,orig_outside,size,size);
 
     % Get fake
     fake_name = fakes(i).name;
     fake_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Quality/', fake_name);
     fake = get_image(fake_path);
-    [fake_SNR, fake_CNR] = get_SNR_CNR(fake, orig_outside, size, size); 
+    [fake_SNR,fake_CNR] = get_SNR_CNR(fake,orig_outside,size,size); 
        
     % CALCULATIONS
     % SNR

@@ -86,9 +86,9 @@ class cyclegan(object):
         self.fake_B_sample = tf.placeholder(tf.float32,
                                             [None, self.image_size, self.image_size,
                                              self.output_c_dim], name='fake_B_sample')
-       
+
         self.snr = tf.placeholder(tf.float32, [1])
-        self.cnr = tf.placeholder(tf.float32, [1])        
+        self.cnr = tf.placeholder(tf.float32, [1])
 
         #real_B -> DB -> DB_real
         self.DB_real = self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
@@ -115,7 +115,7 @@ class cyclegan(object):
         #Total D loss = DA loss + DB loss
         self.d_loss = self.da_loss + self.db_loss
 
-        # I think these are only for tensorboard
+        #only for tensorboard
         self.g_loss_a2b_sum = tf.summary.scalar("g_loss_a2b", self.g_loss_a2b)
         self.g_loss_b2a_sum = tf.summary.scalar("g_loss_b2a", self.g_loss_b2a)
         self.g_loss_sum = tf.summary.scalar("g_loss", self.g_loss)

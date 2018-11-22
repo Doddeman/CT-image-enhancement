@@ -12,6 +12,13 @@ try:
 except AttributeError:
     from imageio import imread as _imread
 
+### for calculating snr cnr in matlab
+import matlab.engine
+eng = matlab.engine.start_matlab()
+eng.addpath(r'C:/Users/davwa/Desktop/Exjobb/Development/MATLAB/matlab_scripts/')
+eng.addpath(r'C:/Users/davwa/Desktop/Exjobb/Development/MATLAB/matlab_scripts/Image_Measurements/')
+###
+
 pp = pprint.PrettyPrinter()
 
 get_stddev = lambda x, k_h, k_w: 1/math.sqrt(k_w*k_h*x.get_shape()[-1])
@@ -45,7 +52,7 @@ class ImagePool(object):
 def load_test_data(image_path, fine_size=256, input_c_dim=1):
     img = imread(image_path)
     #Should already be 256x256
-    img = scipy.misc.imresize(img, [fine_size, fine_size]) 
+    img = scipy.misc.imresize(img, [fine_size, fine_size])
     img = img[:, :, :input_c_dim] #Changing to correct channel dim
     img = img/127.5 - 1
     return img
@@ -143,9 +150,13 @@ def transform(image, npx=64, is_crop=True, resize_w=64):
 def inverse_transform(images):
     return (images+1.)/2.
 
+def get_snr_cnr(impath):
+    snr, cnr = eng.python_get(impath,nargout=2)
+    return snr, cnr
+
 #Experiment. Adding it to cost
-def signaltonoise(a, axis=None,ddof=0):    
+'''def signaltonoise(a, axis=None,ddof=0):
     a = np.asanyarray(a)
     m = a.mean(axis)
     sd = a.std(axis=axis, ddof=ddof)
-    return np.where(sd == 0, 0, m/sd)
+    return np.where(sd == 0, 0, m/sd)'''
