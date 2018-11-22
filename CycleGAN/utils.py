@@ -55,6 +55,8 @@ def load_train_data(image_path, load_size=286, fine_size=256, input_c_dim=1, out
     img_A = imread(image_path[0])
     img_B = imread(image_path[1])
 
+    flipped = False
+
     if not is_testing:
         img_A = scipy.misc.imresize(img_A, [load_size, load_size])
         img_B = scipy.misc.imresize(img_B, [load_size, load_size])
@@ -71,6 +73,7 @@ def load_train_data(image_path, load_size=286, fine_size=256, input_c_dim=1, out
         if np.random.random() > 0.5:
             img_A = np.fliplr(img_A)
             img_B = np.fliplr(img_B)
+            flipped = True
     else:
         img_A = scipy.misc.imresize(img_A, [fine_size, fine_size])
         img_B = scipy.misc.imresize(img_B, [fine_size, fine_size])
@@ -87,7 +90,7 @@ def load_train_data(image_path, load_size=286, fine_size=256, input_c_dim=1, out
     #print("AB SHAPE:", img_AB.shape)
 
     # img_AB shape: (fine_size, fine_size, input_c_dim + output_c_dim)
-    return img_AB
+    return img_AB, flipped
 
 # -----------------------------
 

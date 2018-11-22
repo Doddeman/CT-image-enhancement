@@ -86,6 +86,10 @@ class cyclegan(object):
         self.fake_B_sample = tf.placeholder(tf.float32,
                                             [None, self.image_size, self.image_size,
                                              self.output_c_dim], name='fake_B_sample')
+       
+        self.snr = tf.placeholder(tf.float32, [1])
+        self.cnr = tf.placeholder(tf.float32, [1])        
+
         #real_B -> DB -> DB_real
         self.DB_real = self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
         #real_A -> DA -> DA_real
@@ -98,7 +102,8 @@ class cyclegan(object):
         #DB_loss_real = mse(DB_real)
         self.db_loss_real = self.criterionGAN(self.DB_real, tf.ones_like(self.DB_real))
         #DB_loss_fake = mse(DB_fake_sample). This loss should probably include SNR & CNR
-        self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample), DB_fake=True)
+        self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample), \
+            DB_fake=True, snr=self.snr)
         #Average DB loss = (real+fake)/2
         self.db_loss = (self.db_loss_real + self.db_loss_fake) / 2
         #DA_loss_real = mse(DA_real)
@@ -187,9 +192,20 @@ class cyclegan(object):
                 batch_files = list(zip(dataA[idx * self.batch_size:(idx + 1) * self.batch_size],
                                        dataB[idx * self.batch_size:(idx + 1) * self.batch_size]))
 
-                batch_images = [load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc) \
-                for batch_file in batch_files]
+                batch_images = []
+                flipped = []
+                for batch_file in batch_files:
+                    AB_image, flip = load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc)
+                    batch_images.append(AB_image)
+                    flipped.append(flip)
+
+                #batch_images = [load_train_data(batch_file, args.load_size, args.fine_size, args.input_nc, args.output_nc) \
+                #for batch_file in batch_files]
                 batch_images = np.array(batch_images).astype(np.float32)
+
+
+                print ("bt", len(batch_images))
+                print ("flipt", flipped)
 
                 # Update G network and record fake outputs
                 fake_A, fake_B, _, summary_str, g_loss = self.sess.run(
@@ -202,29 +218,33 @@ class cyclegan(object):
                 #print ("Total step counter:", counter)
                 print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
+                snr = []
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_full_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_full_R_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
-                    copyfile(batch_files[i][0], original_path)
+                    #copyfile(batch_files[i][0], original_path)
                     #print("fake_B[i]:",fake_B[i].shape)'
                     #remove color channel info to make image saveable
                     resh = np.reshape(fake_B[i], (args.fine_size, args.fine_size))
+                    if flipped[i]:
+                        resh = np.fliplr(resh)
+                    snr.append(signaltonoise(fake_B[i]))
                     # RESIZE TO 256x256 ?
                     # I think so if you want to perform calcs on it
                     # To get SNR etc.
                     #resh = resize(resh, (256,256), anti_aliasing=True)
-                    scipy.misc.imsave(fake_path, resh)
+                    #scipy.misc.imsave(fake_path, resh)
                     batch_counter += 1
 
                 #snr = signaltonoise(fake_B)
                 ###########################
-
+                print ("snr", snr)
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Update D network

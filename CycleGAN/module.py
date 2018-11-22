@@ -144,8 +144,8 @@ def abs_criterion(in_, target):
 
 #this definitely looks like MSE to me
 def mae_criterion(in_, target, DB_fake=False):
-    #print("maeee wun shinderu")
-    #print("in_", in_, "target", target)
+    print("maeee wun shinderu")
+    print("in_", in_.shape, "target", target.shape)
     #snr = signaltonoise(in_)
     '''if DB_fake:
         return tf.reduce_mean(((in_-target)**2)+(1000/(snr**2)))
