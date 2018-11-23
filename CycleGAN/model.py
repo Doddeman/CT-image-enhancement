@@ -87,8 +87,8 @@ class cyclegan(object):
                                             [None, self.image_size, self.image_size,
                                              self.output_c_dim], name='fake_B_sample')
 
-        self.snr = tf.placeholder(tf.float32, [1])
-        self.cnr = tf.placeholder(tf.float32, [1])
+        self.snr = tf.placeholder(tf.float32, [None])
+        self.cnr = tf.placeholder(tf.float32, [None])
 
         #real_B -> DB -> DB_real
         self.DB_real = self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
@@ -103,7 +103,7 @@ class cyclegan(object):
         self.db_loss_real = self.criterionGAN(self.DB_real, tf.ones_like(self.DB_real))
         #DB_loss_fake = mse(DB_fake_sample). This loss should probably include SNR & CNR
         self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample), \
-            DB_fake=True, snr=self.snr)
+            DB_fake=True, snr=self.snr, cnr=self.cnr)
         #Average DB loss = (real+fake)/2
         self.db_loss = (self.db_loss_real + self.db_loss_fake) / 2
         #DA_loss_real = mse(DA_real)
@@ -120,6 +120,7 @@ class cyclegan(object):
         self.g_loss_b2a_sum = tf.summary.scalar("g_loss_b2a", self.g_loss_b2a)
         self.g_loss_sum = tf.summary.scalar("g_loss", self.g_loss)
         self.g_sum = tf.summary.merge([self.g_loss_sum])
+
         self.db_loss_sum = tf.summary.scalar("db_loss", self.db_loss)
         self.da_loss_sum = tf.summary.scalar("da_loss", self.da_loss)
         self.d_loss_sum = tf.summary.scalar("d_loss", self.d_loss)
@@ -127,8 +128,13 @@ class cyclegan(object):
         self.db_loss_fake_sum = tf.summary.scalar("db_loss_fake", self.db_loss_fake)
         self.da_loss_real_sum = tf.summary.scalar("da_loss_real", self.da_loss_real)
         self.da_loss_fake_sum = tf.summary.scalar("da_loss_fake", self.da_loss_fake)
+
+        #self.snr_gain = tf.summary.scalar("snr", self.snr)
+        #self.cnr_gain = tf.summary.scalar("cnr", self.cnr)
+
         self.d_sum = tf.summary.merge(
-            [self.d_loss_sum]
+            #[self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain]
+            [self.d_loss_sum,self.db_loss_fake_sum, db_loss_real_sum]
         )
 
         self.test_A = tf.placeholder(tf.float32,
@@ -143,8 +149,6 @@ class cyclegan(object):
         t_vars = tf.trainable_variables()
         self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
         self.g_vars = [var for var in t_vars if 'generator' in var.name]
-        #print("D_VARS")
-        #for var in self.d_vars: print(var.name)
 
     def train(self, args):
         """Train cyclegan"""
@@ -156,7 +160,8 @@ class cyclegan(object):
 
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
-        self.writer = tf.summary.FileWriter("./events/d32", self.sess.graph)
+        #Change this folder for tensorboard logs
+        self.writer = tf.summary.FileWriter("./events/cost_test", self.sess.graph)
 
         ###### Only for locating continued counters #######
         dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
@@ -218,7 +223,8 @@ class cyclegan(object):
                 #print ("Total step counter:", counter)
                 print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
-                snr = []
+                snrv = []
+                cnrv = []
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
@@ -228,23 +234,27 @@ class cyclegan(object):
                     fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
-                    #copyfile(batch_files[i][0], original_path)
-                    #print("fake_B[i]:",fake_B[i].shape)'
+                    copyfile(batch_files[i][0], original_path)
+                    print("fake_B[i]:",fake_B[i].shape)
                     #remove color channel info to make image saveable
                     resh = np.reshape(fake_B[i], (args.fine_size, args.fine_size))
                     if flipped[i]:
                         resh = np.fliplr(resh)
-                    snr.append(signaltonoise(fake_B[i]))
+
                     # RESIZE TO 256x256 ?
                     # I think so if you want to perform calcs on it
                     # To get SNR etc.
                     #resh = resize(resh, (256,256), anti_aliasing=True)
-                    #scipy.misc.imsave(fake_path, resh)
+                    scipy.misc.imsave(fake_path, resh)
+
+                    snr, cnr = get_snr_cnr(fake_path)
+                    print("snr",snr,"cnr",cnr)
+                    snrv.append(snr)
+                    cnrv.append(cnr)
+
                     batch_counter += 1
 
-                #snr = signaltonoise(fake_B)
                 ###########################
-                print ("snr", snr)
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
 
                 # Update D network
@@ -253,8 +263,12 @@ class cyclegan(object):
                     feed_dict={self.real_data: batch_images,
                                self.fake_A_sample: fake_A,
                                self.fake_B_sample: fake_B,
+                               self.snr: snrv,
+                               self.cnr: cnrv,
                                self.lr: lr})
                 self.writer.add_summary(summary_str, counter)
+
+                print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 counter += 1
                 #Prints info and saves a sample image with print_freq
@@ -263,7 +277,7 @@ class cyclegan(object):
                     print(("Epoch: [%2d/%2d] [%4d/%4d] time: %4.4f" % (
                         epoch, args.epoch-1, idx, batch_idxs, time.time() - start_time)))
                     #print("SNR:",snr)
-                    print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
+                    #print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 #Create a model checkpoint at save_freq
                 #if np.mod(counter, args.save_freq) == 2:

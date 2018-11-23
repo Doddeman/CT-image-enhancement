@@ -1,5 +1,5 @@
 function [SNR, CNR] = python_get(path)
-disp('HEUIAH matlab');
+% disp('HEUIAH matlab');
 image = get_image(path);
 size = 256;
 outside = get_outside(image,size,size);

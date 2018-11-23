@@ -143,14 +143,20 @@ def abs_criterion(in_, target):
     return tf.reduce_mean(tf.abs(in_ - target))
 
 #this definitely looks like MSE to me
-def mae_criterion(in_, target, DB_fake=False):
+def mae_criterion(in_, target, DB_fake=False, snr=None, cnr=None):
     print("maeee wun shinderu")
     print("in_", in_.shape, "target", target.shape)
-    #snr = signaltonoise(in_)
-    '''if DB_fake:
-        return tf.reduce_mean(((in_-target)**2)+(1000/(snr**2)))
-    else:'''
-    return tf.reduce_mean((in_-target)**2)
+    if DB_fake:
+        print("IS IT HAPPENING?")
+        print ("snr",snr,"cnr",cnr)
+        print ("snr",snr.shape,"cnr",cnr.shape)
+        #regularizer = 10/(snr**2)+10/(cnr**2)
+        regularizer = 1000/tf.abs(snr)+1000/tf.abs(cnr)
+        return tf.reduce_mean(((in_-target)**2)+regularizer)
+    else:
+        print("its not happening")
+        return tf.reduce_mean((in_-target)**2)
+    #return tf.reduce_mean((in_-target)**2)
 
 
 def sce_criterion(logits, labels):

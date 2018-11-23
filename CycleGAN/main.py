@@ -30,7 +30,7 @@ parser.add_argument('--which_direction', dest='which_direction', default='AtoB',
 parser.add_argument('--phase', dest='phase', default='train', help='train, test')
 #save_freq should be training data set size divided by batch size
 #parser.add_argument('--save_freq', dest='save_freq', type=int, default=4098, help='save a model every save_freq iterations')
-parser.add_argument('--print_freq', dest='print_freq', type=int, default=50, help='print the debug information every print_freq iterations')
+parser.add_argument('--print_freq', dest='print_freq', type=int, default=10, help='print the debug information every print_freq iterations')
 parser.add_argument('--continue_train', dest='continue_train', type=bool, default=False, help='if continue training, load the latest model: 1: true, 0: false')
 parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', default='./checkpoint', help='models are saved here')
 #get that checkpoint
