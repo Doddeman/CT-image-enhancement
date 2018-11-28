@@ -12,6 +12,7 @@ close all;
 % images = dir('E:\david\R_middle_slices/*.png');
 images = dir('C:\Users\davwa\Desktop\R3-R28_middle_slices/*.png');
 L = length(images);
+size = 256;
 % SNR_vector = zeros(length(images),1);
 % roi_SNR_vector = zeros(length(images),1);
 CNR_vector = zeros(length(images),1);
@@ -19,13 +20,11 @@ for i = 1:L
     i
     name = images(i).name;
     path = strcat('C:\Users\davwa\Desktop\R3-R28_middle_slices/', name);
-    image = im2double(imread(path));
-    [mean_ROI, std_ROI, ~, mean_background, ...
-        std_background] = get_roi_background(image);    
+    image = get_image(path);
+    outside = get_outside(image,size,size);
+    [SNR,CNR] = get_SNR_CNR(image,outside,size,size);    
     
 %     roi_SNR = meanROI/sdROI;
-%     SNR = mean_ROI / std_background;
-    CNR = mean_ROI - mean_background;
 %     roi_SNR_vector(i) = roi_SNR;
 %     SNR_vector(i) = SNR;
     CNR_vector(i) = CNR;

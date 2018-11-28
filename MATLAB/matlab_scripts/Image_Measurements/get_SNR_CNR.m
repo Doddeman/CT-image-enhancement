@@ -25,5 +25,11 @@ background_values = image(background_indices);
 std_background = std(background_values);
 mean_background = mean(background_values);
 
-SNR = mean_ROI / std_background;
-CNR = mean_ROI - mean_background;
+signal = mean_ROI;
+noise = std_background; 
+
+SNR = signal / noise;
+contrast = signal - mean_background;
+CNR = contrast / noise;
+
+

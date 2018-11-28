@@ -129,12 +129,12 @@ class cyclegan(object):
         self.da_loss_real_sum = tf.summary.scalar("da_loss_real", self.da_loss_real)
         self.da_loss_fake_sum = tf.summary.scalar("da_loss_fake", self.da_loss_fake)
 
-        #self.snr_gain = tf.summary.scalar("snr", self.snr)
-        #self.cnr_gain = tf.summary.scalar("cnr", self.cnr)
+        self.snr_gain = tf.summary.scalar("snr", self.snr)
+        self.cnr_gain = tf.summary.scalar("cnr", self.cnr)
 
         self.d_sum = tf.summary.merge(
-            #[self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain]
-            [self.d_loss_sum,self.db_loss_fake_sum, db_loss_real_sum]
+            [self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain,
+            self.d_loss_sum, self.db_loss_fake_sum, self.db_loss_real_sum]
         )
 
         self.test_A = tf.placeholder(tf.float32,
@@ -160,8 +160,8 @@ class cyclegan(object):
 
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
-        #Change this folder for tensorboard logs
-        self.writer = tf.summary.FileWriter("./events/cost_test", self.sess.graph)
+        #Change this folder for tensorboard events
+        self.writer = tf.summary.FileWriter("./events/snr_test", self.sess.graph)
 
         ###### Only for locating continued counters #######
         dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
