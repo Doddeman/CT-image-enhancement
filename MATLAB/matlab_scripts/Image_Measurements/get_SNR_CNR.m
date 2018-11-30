@@ -22,11 +22,15 @@ image = image + outside;
 background_indices = image < 2;
 background_values = image(background_indices);
 
-std_background = std(background_values);
+std_background = std(background_values); %THIS VALUE IS NAN. 
+%BIG PROBLEM. temp solution by excluding nans. 
+% Definitely happens at least once every epoch.
+% Happens for image 10019 and 10020
+
 mean_background = mean(background_values);
 
 signal = mean_ROI;
-noise = std_background; 
+noise = std_background;
 
 SNR = signal / noise;
 contrast = signal - mean_background;

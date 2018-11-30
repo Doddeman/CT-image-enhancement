@@ -32,11 +32,11 @@ if test
     %check for errors
     for fake_i = 1:L2
         fake_i
-        orig_i = mod(fake_i-1,L1)+1;
+        orig_i = mod(fake_i-1,L1)+1; %getting correct original index
         orig_name = return_origs(orig_i).name;
         fake_name = return_fakes(fake_i).name;
         fake_name = strsplit(fake_name,'_');
-        fake_name = strcat(fake_name{3},'_', fake_name{4},'_', fake_name{5});
+        fake_name = strcat(fake_name{2},'_', fake_name{3},'_', fake_name{4});
         if ~strcmp(orig_name,fake_name)
             disp('Not same image!!!');
             return

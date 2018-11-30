@@ -6,27 +6,33 @@
 %Get images and sort after date modified
 % originals = dir('../to_matlab/origs_terrible/*.png');
 % fakes = dir('../to_matlab/fakes_terrible/*.png');
-originals = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/*.png');
-fakes = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Quality/*.png');
+originals = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Full_Quality\testA/*.png');
+fakes = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Full_Quality/*.png');
 test = true; 
 [originals, fakes, L] = get_data(originals, fakes, test);
 
 %%%%% Testing
 %% 
-n = 1700;
-figure(80)
-orig = originals(n).name
-orig_path = strcat('../to_matlab/origs_terrible/', orig);
-imshow(orig_path)
+n = 10020;
+% figure(80)
+% orig = originals(n).name
+% orig_path = strcat('../to_matlab/origs_terrible/', orig);
+% imshow(orig_path)
 
 figure(81)
 fake = fakes(n).name
-fakepath = strcat('../to_matlab/fakes_terrible/', fake);
+fakepath = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Full_Quality/', fake);
 imshow(fakepath)
+
+size =256;
+orig = get_image(fakepath);
+hej = isnan(orig);
+orig_outside = get_outside(orig, size, size);
+[orig_SNR,orig_CNR] = get_SNR_CNR(orig,orig_outside,size,size);
 
 %%%%%%%%%%%%%% INITIATE DATA STRUCTURES %%%%%%%%%%%%
 %%
-images_per_epoch = 1818;
+images_per_epoch = 1820;
 % images_per_epoch = 1478;
 % images_per_epoch = 12628;
 % images_per_epoch = 12624;
@@ -66,39 +72,47 @@ for i = 1:L
     else
         orig_name = originals(i).name;
     end
-    orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/', orig_name); 
+    orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Full_Quality\testA/', orig_name); 
     orig = get_image(orig_path);
     orig_outside = get_outside(orig, size, size);
     [orig_SNR,orig_CNR] = get_SNR_CNR(orig,orig_outside,size,size);
-
+    %orig_SNR
     % Get fake
     fake_name = fakes(i).name;
-    fake_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Quality/', fake_name);
+    fake_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_Full_Quality/', fake_name);
     fake = get_image(fake_path);
-    [fake_SNR,fake_CNR] = get_SNR_CNR(fake,orig_outside,size,size); 
-       
+    [fake_SNR,fake_CNR] = get_SNR_CNR(fake,orig_outside,size,size);
+%     fake_SNR
     % CALCULATIONS
     % SNR
-    SNR_diff = fake_SNR - orig_SNR;
-    SNR_ratio = SNR_diff / orig_SNR;
-    if sign(SNR_diff) ~= sign(SNR_ratio)
-        SNR_ratio = SNR_ratio * -1;
+    if ~isnan(fake_SNR) && ~isnan(orig_SNR)
+        SNR_diff = fake_SNR - orig_SNR;
+        SNR_ratio = SNR_diff / orig_SNR;
+        if sign(SNR_diff) ~= sign(SNR_ratio)
+            SNR_ratio = SNR_ratio * -1;
+        end
+        SNR_epoch = SNR_epoch + SNR_diff;
+        ratio_SNR_epoch = ratio_SNR_epoch + SNR_ratio;
+    else
+        disp('Nan1');
     end
-    SNR_epoch = SNR_epoch + SNR_diff;
-    ratio_SNR_epoch = ratio_SNR_epoch + SNR_ratio;
     % CNR
-    CNR_diff = fake_CNR - orig_CNR;
-    CNR_ratio = CNR_diff / orig_CNR;
-    if sign(CNR_diff) ~= sign(CNR_ratio)
-        CNR_ratio = CNR_ratio * -1;
+    if ~isnan(fake_SNR) && ~isnan(orig_SNR)
+        CNR_diff = fake_CNR - orig_CNR;
+        CNR_ratio = CNR_diff / orig_CNR;
+        if sign(CNR_diff) ~= sign(CNR_ratio)
+            CNR_ratio = CNR_ratio * -1;
+        end
+        CNR_epoch = CNR_epoch + CNR_diff;
+        ratio_CNR_epoch = ratio_CNR_epoch + CNR_ratio;
+    else
+        disp('NaN2');
     end
-    CNR_epoch = CNR_epoch + CNR_diff;
-    ratio_CNR_epoch = ratio_CNR_epoch + CNR_ratio;
     % UIQI
     [UIQI, ~] = get_uiqi(orig, fake);
     UIQI_epoch = UIQI_epoch + UIQI;
 
-    if mod(i,images_per_epoch) == 0 % End of epoch?
+    if mod(i,10) == 0 % End of epoch?
         %CALCULATE MEAN
         mean_SNR = SNR_epoch / images_per_epoch;
         mean_SNR_ratio = ratio_SNR_epoch / images_per_epoch;
@@ -182,6 +196,6 @@ ylabel('CNR ratio')
 %Save workspace
 total_epochs = 80;
 saved_every = 1;
-save('sample_R_test', 'total_epochs', 'saved_every', 'images_per_epoch', ...
+save('full_R_test', 'total_epochs', 'saved_every', 'images_per_epoch', ...
     'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',... 
     'UIQI_vector', 'orig_SNR_vector', 'fake_SNR_vector', 'orig_CNR_vector', 'fake_CNR_vector')

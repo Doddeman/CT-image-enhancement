@@ -386,7 +386,7 @@ class cyclegan(object):
             #But will probably only receive 256x256
             sample_image = np.array(sample_image).astype(np.float32)
             image_path = os.path.join(args.test_dir,
-                                      '{0}_{1}_{2}'.format(args.checkpoint, args.which_direction,
+                                      '{0}_{1}'.format(args.checkpoint, 
                                       os.path.basename(sample_file))) #added checkpoint to file name
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
 

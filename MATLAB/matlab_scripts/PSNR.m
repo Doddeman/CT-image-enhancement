@@ -1,23 +1,27 @@
 %%%%%%%%% ADD NOISE %%%%%%%%%%%
 % Use test B images (dose modulated but "high" quality")
-originals = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/*.png');
+originals = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testB/*.png');
 L = length(originals);
 
 for i = 1:L
+    i
+    orig_name = originals(i).name;
     orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testB/', orig_name); 
     orig = get_image(orig_path);
-    gauss = imnoise(orig,'gaussian');
-    %poisson = imnoise(orig,'poisson');
+    gauss = imnoise(orig,'gaussian',0,0.05);
+    poisson = imnoise(orig,'poisson');
     noisy = imnoise(gauss,'poisson');
-    noisy_dest = strcat('C:\Users\davwa\Desktop\noisy/', orig_path);
-    imwrite(noisy, noisy_dest);
+    noisy_dest = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\noisy/','poiss', orig_name);
+    imwrite(poisson, noisy_dest);
 end
 
 %%%%%%%%% PYTHON %%%%%%%%%%%
+%%
 %perhaps call python to send 
 %noisy images through CGAN
 
 %%%%%%%%% GET PSNR %%%%%%%%%%%
+%%
 generated = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Quality\testA/*.png');
 
 PSNR_vector = zeros(L,1);
@@ -32,4 +36,5 @@ for i = 1:L
 end
 
 %%%%%%%%% PLOT %%%%%%%%%%%
+%%
 do_plot(PSNR_vector , 30, 'PSNR', 'PSNR');
