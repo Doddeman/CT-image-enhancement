@@ -20,7 +20,7 @@ cells = sortrows(cells, 3);
 cells = reshape(cells', sz);
 return_fakes = cell2struct(cells, fields, 1);
 
-L1 = length(return_origs)
+L1 = length(return_origs);
 L2 = length(return_fakes);
 
 if test
