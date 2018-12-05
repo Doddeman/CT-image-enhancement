@@ -88,8 +88,9 @@ class cyclegan(object):
                                             [None, self.image_size, self.image_size,
                                              self.output_c_dim], name='fake_B_sample')
 
-        self.snr = tf.placeholder(tf.float32, [None])
-        self.cnr = tf.placeholder(tf.float32, [None])
+        self.snr = tf.placeholder(tf.float32,[None])
+        print("SNRSHAPE", self.snr.shape)
+        self.cnr = tf.placeholder(tf.float32,[None])
 
         #real_B -> DB -> DB_real
         self.DB_real = self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
@@ -104,7 +105,7 @@ class cyclegan(object):
         self.db_loss_real = self.criterionGAN(self.DB_real, tf.ones_like(self.DB_real))
         #DB_loss_fake = mse(DB_fake_sample). This loss should probably include SNR & CNR
         self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample), \
-            DB_fake=False, snr=self.snr, cnr=self.cnr)
+            DB_fake=True, snr=self.snr, cnr=self.cnr)
         #Average DB loss = (real+fake)/2
         self.db_loss = (self.db_loss_real + self.db_loss_fake) / 2
         #DA_loss_real = mse(DA_real)
@@ -115,6 +116,7 @@ class cyclegan(object):
         self.da_loss = (self.da_loss_real + self.da_loss_fake) / 2
         #Total D loss = DA loss + DB loss
         self.d_loss = self.da_loss + self.db_loss
+        #print("d_loss", self.d_loss.shape)
 
         #only for tensorboard
         self.g_loss_a2b_sum = tf.summary.scalar("g_loss_a2b", self.g_loss_a2b)
@@ -128,17 +130,19 @@ class cyclegan(object):
         self.db_loss_sum = tf.summary.scalar("db_loss", self.db_loss)
         self.da_loss_sum = tf.summary.scalar("da_loss", self.da_loss)
         self.d_loss_sum = tf.summary.scalar("d_loss", self.d_loss)
+        #print("d_loss_sum", self.d_loss_sum.shape)
         self.db_loss_real_sum = tf.summary.scalar("db_loss_real", self.db_loss_real)
         self.db_loss_fake_sum = tf.summary.scalar("db_loss_fake", self.db_loss_fake)
         self.da_loss_real_sum = tf.summary.scalar("da_loss_real", self.da_loss_real)
         self.da_loss_fake_sum = tf.summary.scalar("da_loss_fake", self.da_loss_fake)
 
-        self.snr_gain = tf.summary.scalar("snr", self.snr)
-        self.cnr_gain = tf.summary.scalar("cnr", self.cnr)
+        self.snr_gain = tf.summary.tensor_summary("snr", self.snr)
+        #print("SNRGAIN", self.snr_gain.shape)
+        self.cnr_gain = tf.summary.tensor_summary("cnr", self.cnr)
 
         self.d_sum = tf.summary.merge(
-            #[self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain]
-            [self.d_loss_sum, self.db_loss_fake_sum, self.db_loss_real_sum]
+            [self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain]
+            #[self.d_loss_sum, self.db_loss_fake_sum, self.db_loss_real_sum]
         )
         #VALIDATION
         self.d_val_loss_sum = tf.summary.scalar("d_val_loss", self.d_loss)
@@ -171,7 +175,7 @@ class cyclegan(object):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         #Change this folder for tensorboard events
-        self.writer = tf.summary.FileWriter("./events/vali", self.sess.graph)
+        self.writer = tf.summary.FileWriter("./events/snr_test", self.sess.graph)
 
         ###### Only for locating continued counters #######
         dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
@@ -219,10 +223,6 @@ class cyclegan(object):
                 #for batch_file in batch_files]
                 batch_images = np.array(batch_images).astype(np.float32)
 
-
-                #print ("bt", len(batch_images))
-                #print ("flipt", flipped)
-
                 # Update G network and record fake outputs
                 fake_A, fake_B, _, summary_str, g_loss = self.sess.run(
                     [self.fake_A, self.fake_B, self.g_optim, self.g_sum, self.g_loss],
@@ -239,18 +239,19 @@ class cyclegan(object):
                 #print ("Total step counter:", counter)
                 print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
-                #snrv = []
-                #cnrv = []
+                snrv = []
+                cnrv = []
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    '''original_path = path + "origs_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     fake_path = path + "fakes_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
-                    copyfile(batch_files[i][0], original_path)
+                    copyfile(batch_files[i][0], original_path)'''
                     #print("fake_B[i]:",fake_B[i].shape)
                     #remove color channel info to make image saveable
                     resh = np.reshape(fake_B[i], (args.fine_size, args.fine_size))
@@ -259,10 +260,10 @@ class cyclegan(object):
 
                     scipy.misc.imsave(fake_path, resh)
 
-                    #snr, cnr = get_snr_cnr(fake_path)
-                    #print("snr",snr,"cnr",cnr)
-                    #snrv.append(snr)
-                    #cnrv.append(cnr)
+                    snr, cnr = get_snr_cnr(fake_path)
+                    print("snr",snr,"cnr",cnr)
+                    snrv.append(snr)
+                    cnrv.append(cnr)
 
                     batch_counter += 1
 
@@ -275,8 +276,8 @@ class cyclegan(object):
                     feed_dict={self.real_data: batch_images,
                                self.fake_A_sample: fake_A,
                                self.fake_B_sample: fake_B,
-                               #self.snr: snrv,
-                               #self.cnr: cnrv,
+                               self.snr: snrv,
+                               self.cnr: cnrv,
                                self.lr: lr})
                 #How often should I write to tensorboard?
                 if np.mod(counter, 3) == 0: #12 times per epoch
