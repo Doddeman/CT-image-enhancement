@@ -103,7 +103,7 @@ class cyclegan(object):
         self.db_loss_real = self.criterionGAN(self.DB_real, tf.ones_like(self.DB_real))
         #DB_loss_fake = mse(DB_fake_sample). This loss should probably include SNR & CNR
         self.db_loss_fake = self.criterionGAN(self.DB_fake_sample, tf.zeros_like(self.DB_fake_sample), \
-            DB_fake=True, snr=self.snr, cnr=self.cnr)
+            DB_fake=False, snr=self.snr, cnr=self.cnr)
         #Average DB loss = (real+fake)/2
         self.db_loss = (self.db_loss_real + self.db_loss_fake) / 2
         #DA_loss_real = mse(DA_real)
@@ -120,6 +120,8 @@ class cyclegan(object):
         self.g_loss_b2a_sum = tf.summary.scalar("g_loss_b2a", self.g_loss_b2a)
         self.g_loss_sum = tf.summary.scalar("g_loss", self.g_loss)
         self.g_sum = tf.summary.merge([self.g_loss_sum])
+        #VALIDATION
+        self.g_val_sum = tf.summary.merge([self.g_loss_sum])
 
         self.db_loss_sum = tf.summary.scalar("db_loss", self.db_loss)
         self.da_loss_sum = tf.summary.scalar("da_loss", self.da_loss)
@@ -133,8 +135,13 @@ class cyclegan(object):
         self.cnr_gain = tf.summary.scalar("cnr", self.cnr)
 
         self.d_sum = tf.summary.merge(
-            [self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain,
-            self.d_loss_sum, self.db_loss_fake_sum, self.db_loss_real_sum]
+            #[self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain]
+            [self.d_loss_sum, self.db_loss_fake_sum, self.db_loss_real_sum]
+        )
+        #VALIDATION
+        self.d_val_sum = tf.summary.merge(
+            #[self.d_loss_sum,self.snr_gain,self.cnr_gain]
+            [self.d_loss_sum]
         )
 
         self.test_A = tf.placeholder(tf.float32,
@@ -161,7 +168,7 @@ class cyclegan(object):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         #Change this folder for tensorboard events
-        self.writer = tf.summary.FileWriter("./events/snr_test", self.sess.graph)
+        self.writer = tf.summary.FileWriter("./events/artifacts", self.sess.graph)
 
         ###### Only for locating continued counters #######
         dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
@@ -209,48 +216,48 @@ class cyclegan(object):
                 batch_images = np.array(batch_images).astype(np.float32)
 
 
-                print ("bt", len(batch_images))
-                print ("flipt", flipped)
+                #print ("bt", len(batch_images))
+                #print ("flipt", flipped)
 
                 # Update G network and record fake outputs
                 fake_A, fake_B, _, summary_str, g_loss = self.sess.run(
                     [self.fake_A, self.fake_B, self.g_optim, self.g_sum, self.g_loss],
                     feed_dict={self.real_data: batch_images, self.lr: lr})
-                self.writer.add_summary(summary_str, counter)
+
+                #How often should I write to tensorboard?
+                if np.mod(counter, batch_idxs/12) == 0: #12 times per epoch
+                    print("Saving to tensorboard1")
+                    self.writer.add_summary(summary_str, counter)
                 #########################
                 # Save images for cnr and snr calculations in matlab
                 #if epoch % 4 == 0:
                 #print ("Total step counter:", counter)
                 print("saving batch", idx)
                 path = "../MATLAB/to_matlab/"
-                snrv = []
-                cnrv = []
+                #snrv = []
+                #cnrv = []
                 for i in range(len(batch_files)):
                     #print(i, batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    original_path = path + "origs_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
                     copyfile(batch_files[i][0], original_path)
-                    print("fake_B[i]:",fake_B[i].shape)
+                    #print("fake_B[i]:",fake_B[i].shape)
                     #remove color channel info to make image saveable
                     resh = np.reshape(fake_B[i], (args.fine_size, args.fine_size))
                     if flipped[i]:
                         resh = np.fliplr(resh)
 
-                    # RESIZE TO 256x256 ?
-                    # I think so if you want to perform calcs on it
-                    # To get SNR etc.
-                    #resh = resize(resh, (256,256), anti_aliasing=True)
                     scipy.misc.imsave(fake_path, resh)
 
-                    snr, cnr = get_snr_cnr(fake_path)
-                    print("snr",snr,"cnr",cnr)
-                    snrv.append(snr)
-                    cnrv.append(cnr)
+                    #snr, cnr = get_snr_cnr(fake_path)
+                    #print("snr",snr,"cnr",cnr)
+                    #snrv.append(snr)
+                    #cnrv.append(cnr)
 
                     batch_counter += 1
 
@@ -263,21 +270,25 @@ class cyclegan(object):
                     feed_dict={self.real_data: batch_images,
                                self.fake_A_sample: fake_A,
                                self.fake_B_sample: fake_B,
-                               self.snr: snrv,
-                               self.cnr: cnrv,
+                               #self.snr: snrv,
+                               #self.cnr: cnrv,
                                self.lr: lr})
-                self.writer.add_summary(summary_str, counter)
+                #How often should I write to tensorboard?
+                if np.mod(counter, batch_idxs/12) == 0: #12 times per epoch
+                    print("Saving to tensorboard2")
+                    self.writer.add_summary(summary_str, counter)
 
-                print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
+                #VALIDATE
+                if np.mod(counter, batch_idxs/12) == 0: #12 times per epoch
+                    self.validate(args)
 
                 counter += 1
                 #Prints info and saves a sample image with print_freq
                 if np.mod(counter, args.print_freq) == 0:
                     #self.sample_model(args.sample_dir, epoch, idx, args.load_size, args.fine_size)
                     print(("Epoch: [%2d/%2d] [%4d/%4d] time: %4.4f" % (
-                        epoch, args.epoch-1, idx, batch_idxs, time.time() - start_time)))
-                    #print("SNR:",snr)
-                    #print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
+                    epoch, args.epoch-1, idx, batch_idxs, time.time() - start_time)))
+                    print("G_LOSS:", g_loss, "D_LOSS:", d_loss)
 
                 #Create a model checkpoint at save_freq
                 #if np.mod(counter, args.save_freq) == 2:
@@ -303,7 +314,6 @@ class cyclegan(object):
 
     def load(self, checkpoint_dir, checkpoint=-1, test=True):
         print(" [*] Reading checkpoint...")
-
         #remove image size from directory name? no it's useful
         model_dir = "%s_%s" % (self.dataset_dir, self.image_size)
         #model_dir = "ct_lq2hq_new_128"
@@ -321,7 +331,6 @@ class cyclegan(object):
             print("CHECKPOINT NAME:", ckpt_name)
             init_epoch = ckpt_name.split('-')[-1]
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
-
             if test:
                 return True
             else:
@@ -368,10 +377,10 @@ class cyclegan(object):
             return
 
         # write html for visual comparison
-        '''index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
+        index_path = os.path.join(args.test_dir, '{0}_index.html'.format(args.which_direction))
         index = open(index_path, "w")
         index.write("<html><body><table><tr>")
-        index.write("<th>name</th><th>input</th><th>output</th></tr>")'''
+        index.write("<th>name</th><th>input</th><th>output</th></tr>")
 
         out_var, in_var = (self.testB, self.test_A) if args.which_direction == 'AtoB' else (
             self.testA, self.test_B)
@@ -380,14 +389,18 @@ class cyclegan(object):
 
         file_counter = 0
         for sample_file in sample_files:
-            print('Processing image: ', file_counter+1, "out of", len(sample_files))
+            print('Testing image: ', file_counter+1, "out of", len(sample_files))
             sample_image = [load_test_data(sample_file, args.fine_size)]
             #Get image size
             #But will probably only receive 256x256
             sample_image = np.array(sample_image).astype(np.float32)
-            image_path = os.path.join(args.test_dir,
-                                      '{0}_{1}'.format(args.checkpoint, 
-                                      os.path.basename(sample_file))) #added checkpoint to file name
+            if args.checkpoint == -1: #don't include checkpoint in file name
+                image_path = os.path.join(args.test_dir,
+                                          '{0}'.format(os.path.basename(sample_file)))
+            else:
+                image_path = os.path.join(args.test_dir,
+                                          '{0}_{1}'.format(args.checkpoint,
+                                           os.path.basename(sample_file))) #added checkpoint to file name
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
 
             #Resize image to 256x256
@@ -399,11 +412,41 @@ class cyclegan(object):
                 scipy.misc.imsave(image_path, fake_resized)'''
             #print("IMAGE PATH:", image_path)
             save_images(fake_img, [1, 1], image_path)
-            '''index.write("<td>%s</td>" % os.path.basename(image_path))
+            index.write("<td>%s</td>" % os.path.basename(image_path))
             index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
                 '..' + os.path.sep + sample_file)))
             index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
                 '..' + os.path.sep + image_path)))
-            index.write("</tr>")'''
+            index.write("</tr>")
             file_counter += 1
-        #index.close()
+        index.close()
+
+    def validate(self,args):
+        init_op = tf.global_variables_initializer()
+        self.sess.run(init_op)
+        if args.which_direction == 'AtoB': #should always be true
+            VAL_FILES = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
+            N_VAL_FILES = int(round(len(N_FILES)*0.25)) #Cross entropy
+            val_indices = random.sample(range(len(VAL_FILES)), N_VAL_FILES)
+
+        for i in range(len(VAL_FILES)):
+            if i in val_indices:
+                print('Validating image: ', file_counter+1, "out of", N_VAL_FILES)
+                sample_image = [load_test_data(VAL_FILES[i], args.fine_size)]
+                #Get image size
+                #But will probably only receive 256x256
+                sample_image = np.array(sample_image).astype(np.float32)
+                image_path = os.path.join(args.test_dir,
+                                          '{0}'.format(os.path.basename(sample_file)))
+                fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
+
+
+                # Update G network and record fake outputs
+                summary_str, d_loss, g_loss = self.sess.run(
+                    [self.g_sum, self.g_loss],
+                    feed_dict={self.real_data: batch_images, self.lr: lr})
+
+                #How often should I write to tensorboard?
+                if np.mod(counter, batch_idxs/12) == 0: #12 times per epoch
+                    print("Saving to tensorboard1")
+                    self.writer.add_summary(summary_str, counter)

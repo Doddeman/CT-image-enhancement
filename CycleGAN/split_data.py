@@ -1,6 +1,9 @@
 import random
 import os
 from shutil import copyfile
+#from glob import glob
+#N_FILES = len(glob('./datasets/{}/*.png*'.format('Full_Quality' + '/testA')))
+#print (N_FILES)
 
 #print (os.getcwd())
 #FROM_PATH = 'datasets/R/trainA'

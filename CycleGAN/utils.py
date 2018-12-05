@@ -13,10 +13,12 @@ except AttributeError:
     from imageio import imread as _imread
 
 ### for calculating snr cnr in matlab
-import matlab.engine
+'''import matlab.engine
 eng = matlab.engine.start_matlab()
-eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/')
-eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/Image_Measurements/')
+#eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/')
+eng.addpath(r'E:\david\CT-image-enhancement\MATLAB\matlab_scripts/')
+eng.addpath(r'E:\david\CT-image-enhancement\MATLAB\matlab_scripts/Image_Measurements/')
+#eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/Image_Measurements/')'''
 ###
 
 pp = pprint.PrettyPrinter()

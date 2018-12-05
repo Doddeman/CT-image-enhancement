@@ -10,7 +10,7 @@ parser.add_argument('--epoch', dest='epoch', type=int, default=80, help='# of ep
 #Hyperparameter
 parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=100, help='# of epoch to decay lr')
 #Hyperparameter
-parser.add_argument('--batch_size', dest='batch_size', type=int, default=1, help='# images in batch')
+parser.add_argument('--batch_size', dest='batch_size', type=int, default=8, help='# images in batch')
 #parser.add_argument('--train_size', dest='train_size', type=int, default=40, help='# images used to train')
 parser.add_argument('--train_size', dest='train_size', type=int, default=1e8, help='# images used to train')
 #Change to save RAM?
