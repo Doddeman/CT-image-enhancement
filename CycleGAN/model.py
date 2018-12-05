@@ -367,7 +367,8 @@ class cyclegan(object):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         if args.which_direction == 'AtoB':
-            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/R7'))
+            sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
+            #sample_files = glob('./R15_to_3D/{}/*.png*'.format('originals'))
         elif args.which_direction == 'BtoA':
             sample_files = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testB'))
         else:
@@ -407,7 +408,7 @@ class cyclegan(object):
                                           '{0}_{1}'.format(args.checkpoint,
                                            os.path.basename(sample_file))) #added checkpoint to file name
             fake_img = self.sess.run(out_var, feed_dict={in_var: sample_image})
-            print (image_path)
+            #print (image_path)
             #Resize image to 256x256
             '''n_of_images = fake_img.shape[0]
             for i in range(n_of_images):
@@ -417,11 +418,13 @@ class cyclegan(object):
                 scipy.misc.imsave(image_path, fake_resized)'''
             #print("IMAGE PATH:", image_path)
             save_images(fake_img, [1, 1], image_path)
-            index.write("<td>%s</td>" % os.path.basename(image_path))
+            #index.write("<td>%s</td>" % os.path.basename(image_path))
             index.write("<td><img src='%s'></td>" % (sample_file if os.path.isabs(sample_file) else (
                 '..' + os.path.sep + sample_file)))
+            #index.write("<td><img src='./%s'></td>" % (sample_file))
             index.write("<td><img src='%s'></td>" % (image_path if os.path.isabs(image_path) else (
                 '..' + os.path.sep + image_path)))
+            index.write("<td><img src='./%s'></td>" % (image_path))
             index.write("</tr>")
             file_counter += 1
         index.close()
