@@ -242,10 +242,10 @@ class cyclegan(object):
                 snrv = []
                 cnrv = []
                 for i in range(len(batch_files)):
-                    #print(i, batch_files[i][0])
+                    #print(i,"al", batch_files[i][0])
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
-                    #print("fn:", file_name)
+                    #print("fn1:", file_name)
                     fake_path = path + "fakes_snrcnr/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     original_path = path + "origs_snrcnr/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #fake_path = path + "fakes_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
@@ -262,8 +262,9 @@ class cyclegan(object):
 
                     snr, cnr = get_snr_cnr(fake_path, original_path)
                     #print("snr",snr,"cnr",cnr)
-                    snrv.append(snr)
-                    cnrv.append(cnr)
+                    if not math.isnan(snr) and not math.isnan(cnr):
+                        snrv.append(snr)
+                        cnrv.append(cnr)
 
                     batch_counter += 1
 
@@ -284,13 +285,13 @@ class cyclegan(object):
                                self.cnr: cnrv,
                                self.lr: lr})
                 #How often should I write to tensorboard?
-                if np.mod(counter,batch_idxs/10) == 0: #12 times per epoch
+                if np.mod(counter,batch_idxs/10) == 0: #10 times per epoch
                     print("Saving to tensorboard2")
                     self.writer.add_summary(summary_str, counter)
 
                 #VALIDATE
-                if np.mod(counter, batch_idxs/10) == 0: #12 times per epoch
-                    self.validate(args, counter, snrv,cnrv)
+                if np.mod(counter, batch_idxs/10) == 0: #10 times per epoch
+                    self.validate(args, counter,epoch, batch_counter)
 
                 counter += 1
                 #Prints info and saves a sample image with print_freq
@@ -434,7 +435,7 @@ class cyclegan(object):
             file_counter += 1
         index.close()
 
-    def validate(self, args, counter,snrv,cnrv):
+    def validate(self, args, counter, epoch, batch_counter):
         if args.which_direction == 'AtoB': #should always be true
 
             dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
@@ -467,6 +468,34 @@ class cyclegan(object):
             [self.fake_A, self.fake_B, self.g_val_sum, self.g_loss],
             feed_dict={self.real_data: batch_images})
         self.writer.add_summary(summary_str, counter)
+
+
+        #GET SNR CNR FOR VALIDATION OF D
+        path = "../MATLAB/to_matlab/"
+        snrv = []
+        cnrv = []
+        for i in range(len(VAL_FILES)):
+            file_name = VAL_FILES[i][0].rsplit("\\", 1)
+            file_name = file_name[1]
+            fake_path = path + "fakes_val/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+            original_path = path + "origs_val/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+            #print("original_path", original_path)
+            #print("fake_path:", fake_path)
+            copyfile(VAL_FILES[i][0], original_path)
+            #print("fake_B[i]:",fake_B[i].shape)
+            #remove color channel info to make image saveable
+            resh = np.reshape(fake_B[i], (args.fine_size, args.fine_size))
+            '''if flipped[i]:
+                resh = np.fliplr(resh)'''
+            scipy.misc.imsave(fake_path, resh)
+            snr, cnr = get_snr_cnr(fake_path, original_path)
+            #print("snr",snr,"cnr",cnr)
+            if not math.isnan(snr) and not math.isnan(cnr):
+                snrv.append(snr)
+                cnrv.append(cnr)
+
+        #snr_mean = sum(snrv)/len(snrv)
+        #cnr_mean = sum(cnrv)/len(cnrv)
 
         [fake_A, fake_B] = self.pool([fake_A, fake_B])
         # Validate D loss
