@@ -88,9 +88,9 @@ class cyclegan(object):
                                             [None, self.image_size, self.image_size,
                                              self.output_c_dim], name='fake_B_sample')
 
-        self.snr = tf.placeholder(tf.float32,[None])
-        print("SNRSHAPE", self.snr.shape)
-        self.cnr = tf.placeholder(tf.float32,[None])
+        self.snr = tf.placeholder(tf.float32,[None], name="snr")
+        self.cnr = tf.placeholder(tf.float32,[None], name="cnr")
+        #print("SNRSHAPE", self.snr.shape)
 
         #real_B -> DB -> DB_real
         self.DB_real = self.discriminator(self.real_B, self.options, reuse=True, name="discriminatorB")
@@ -136,13 +136,13 @@ class cyclegan(object):
         self.da_loss_real_sum = tf.summary.scalar("da_loss_real", self.da_loss_real)
         self.da_loss_fake_sum = tf.summary.scalar("da_loss_fake", self.da_loss_fake)
 
-        self.snr_gain = tf.summary.tensor_summary("snr", self.snr)
+        #self.snr_gain = tf.summary.tensor_summary("snr_gain", self.snr)
+        #self.cnr_gain = tf.summary.tensor_summary("cnr_gain", self.cnr)
         #print("SNRGAIN", self.snr_gain.shape)
-        self.cnr_gain = tf.summary.tensor_summary("cnr", self.cnr)
 
         self.d_sum = tf.summary.merge(
-            [self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain]
-            #[self.d_loss_sum, self.db_loss_fake_sum, self.db_loss_real_sum]
+            #[self.d_loss_sum,self.db_loss_fake_sum,self.snr_gain,self.cnr_gain]
+            [self.d_loss_sum, self.db_loss_fake_sum, self.db_loss_real_sum]
         )
         #VALIDATION
         self.d_val_loss_sum = tf.summary.scalar("d_val_loss", self.d_loss)
@@ -175,7 +175,7 @@ class cyclegan(object):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
         #Change this folder for tensorboard events
-        self.writer = tf.summary.FileWriter("./events/snr_test", self.sess.graph)
+        self.writer = tf.summary.FileWriter("./events/snrcnr", self.sess.graph)
 
         ###### Only for locating continued counters #######
         dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/trainA'))
@@ -183,7 +183,7 @@ class cyclegan(object):
         tr_size = min(min(len(dataA), len(dataB)), args.train_size) // self.batch_size
 
         if args.continue_train:
-            load = self.load(args.checkpoint_dir, test=False)
+            load = self.load(args.checkpoint_dir, checkpoint= args.checkpoint, test=False)
             if load[0] == True:
                 print(" [*] Load SUCCESS")
                 init_epoch = int(load[1]) + 1 #iniate training at checkpoint epoch
@@ -229,8 +229,8 @@ class cyclegan(object):
                     feed_dict={self.real_data: batch_images, self.lr: lr})
 
                 #How often should I write to tensorboard?
-                #if np.mod(counter, batch_idxs/12) == 0: #12 times per epoch
-                if np.mod(counter, 3) == 0: #12 times per epoch
+                if np.mod(counter, batch_idxs/10) == 0: #12 times per epoch
+                #if np.mod(counter, 3) == 0: #12 times per epoch
                     print("Saving to tensorboard1")
                     self.writer.add_summary(summary_str, counter)
                 #########################
@@ -246,12 +246,12 @@ class cyclegan(object):
                     file_name = batch_files[i][0].rsplit("\\", 1)
                     file_name = file_name[1]
                     #print("fn:", file_name)
-                    fake_path = path + "fakes_test/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    '''original_path = path + "origs_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
-                    fake_path = path + "fakes_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    fake_path = path + "fakes_snrcnr/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    original_path = path + "origs_snrcnr/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
+                    #fake_path = path + "fakes_art_8_80/" + str(epoch) + "_" + str(batch_counter) + "-" + file_name
                     #print("original_path", original_path)
                     #print("fake_path:", fake_path)
-                    copyfile(batch_files[i][0], original_path)'''
+                    copyfile(batch_files[i][0], original_path)
                     #print("fake_B[i]:",fake_B[i].shape)
                     #remove color channel info to make image saveable
                     resh = np.reshape(fake_B[i], (args.fine_size, args.fine_size))
@@ -260,12 +260,16 @@ class cyclegan(object):
 
                     scipy.misc.imsave(fake_path, resh)
 
-                    snr, cnr = get_snr_cnr(fake_path)
-                    print("snr",snr,"cnr",cnr)
+                    snr, cnr = get_snr_cnr(fake_path, original_path)
+                    #print("snr",snr,"cnr",cnr)
                     snrv.append(snr)
                     cnrv.append(cnr)
 
                     batch_counter += 1
+
+                snr_mean = sum(snrv)/len(snrv)
+                cnr_mean = sum(cnrv)/len(cnrv)
+                print("snr mean:",snr_mean,"cnr mean:",cnr_mean)
 
                 ###########################
                 [fake_A, fake_B] = self.pool([fake_A, fake_B])
@@ -280,13 +284,13 @@ class cyclegan(object):
                                self.cnr: cnrv,
                                self.lr: lr})
                 #How often should I write to tensorboard?
-                if np.mod(counter, 3) == 0: #12 times per epoch
+                if np.mod(counter,batch_idxs/10) == 0: #12 times per epoch
                     print("Saving to tensorboard2")
                     self.writer.add_summary(summary_str, counter)
 
                 #VALIDATE
-                if np.mod(counter, 3) == 0: #12 times per epoch
-                    self.validate(args, counter)
+                if np.mod(counter, batch_idxs/10) == 0: #12 times per epoch
+                    self.validate(args, counter, snrv,cnrv)
 
                 counter += 1
                 #Prints info and saves a sample image with print_freq
@@ -430,16 +434,15 @@ class cyclegan(object):
             file_counter += 1
         index.close()
 
-    def validate(self, args, counter):
-        init_op = tf.global_variables_initializer()
-        self.sess.run(init_op)
+    def validate(self, args, counter,snrv,cnrv):
         if args.which_direction == 'AtoB': #should always be true
 
             dataA = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testA'))
             dataB = glob('./datasets/{}/*.png*'.format(self.dataset_dir + '/testB'))
+            #print("dataB", len(dataB))
             #N_A_FILES = int(round(len(dataA)*0.25)) #Cross entropy (sample entropy?)
             N_A_FILES = 100 #validating with 100 random images from val set
-            AB_indices = random.sample(range(len(dataA)), N_A_FILES)
+            AB_indices = random.sample(range(len(dataB)), N_A_FILES)
             dataA = [dataA[x] for x in AB_indices]
             dataB = [dataB[x] for x in AB_indices]
             VAL_FILES = list(zip(dataA, dataB))
@@ -457,22 +460,24 @@ class cyclegan(object):
 
 
         batch_images = np.array(batch_images).astype(np.float32)
-        print ("shape:", batch_images.shape)
+        #print ("shape:", batch_images.shape)
 
         # Validate G loss
         fake_A, fake_B, summary_str, g_val_loss = self.sess.run(
             [self.fake_A, self.fake_B, self.g_val_sum, self.g_loss],
             feed_dict={self.real_data: batch_images})
-            #feed_dict={self.real_data: batch_images})
         self.writer.add_summary(summary_str, counter)
 
+        [fake_A, fake_B] = self.pool([fake_A, fake_B])
         # Validate D loss
         summary_str, d_val_loss = self.sess.run(
             [self.d_val_sum, self.d_loss],
             #feed_dict={self.real_data: batch_images, self.lr: lr})
             feed_dict={self.real_data: batch_images,
             self.fake_A_sample: fake_A,
-            self.fake_B_sample: fake_B})
+            self.fake_B_sample: fake_B,
+            self.snr: snrv,
+            self.cnr: cnrv})
         self.writer.add_summary(summary_str, counter)
 
-        #print('Validating loss. G:', g_loss, 'D:', d_loss )
+        print('Validating loss. G:', g_val_loss, 'D:', d_val_loss)

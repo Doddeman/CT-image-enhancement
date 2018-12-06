@@ -15,10 +15,10 @@ except AttributeError:
 ### for calculating snr cnr in matlab
 import matlab.engine
 eng = matlab.engine.start_matlab()
-eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/')
-#eng.addpath(r'E:/david/CT-image-enhancement/MATLAB/matlab_scripts/')
-#eng.addpath(r'E:/david/CT-image-enhancement/MATLAB/matlab_scripts/Image_Measurements/')
-eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/Image_Measurements/')
+#eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/')
+eng.addpath(r'E:\david\CT-image-enhancement\MATLAB\matlab_scripts/')
+eng.addpath(r'E:\david\CT-image-enhancement\MATLAB\matlab_scripts/Image_Measurements/')
+#eng.addpath(r'C:/Users/davwa/Desktop/CT-image-enhancement/MATLAB/matlab_scripts/Image_Measurements/')
 ###
 
 pp = pprint.PrettyPrinter()
@@ -152,8 +152,9 @@ def transform(image, npx=64, is_crop=True, resize_w=64):
 def inverse_transform(images):
     return (images+1.)/2.
 
-def get_snr_cnr(impath):
-    snr, cnr = eng.python_get(impath,nargout=2)
+#gets improvement divided by original value
+def get_snr_cnr(fake_path, orig_path):
+    snr, cnr = eng.python_get(fake_path,orig_path,nargout=2)
     return snr, cnr
 
 #Experiment. Adding it to cost
