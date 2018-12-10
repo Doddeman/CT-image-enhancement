@@ -4,8 +4,6 @@ function do_plot(super,SNR_vector, ratio_SNR_vector,CNR_vector,ratio_CNR_vector)
 x = (1:length(SNR_vector))';
 
 figure
-title('Average values')
-
 subplot(2,2,1);
 trend = fit(x,SNR_vector,'poly2');
 plot(SNR_vector);
