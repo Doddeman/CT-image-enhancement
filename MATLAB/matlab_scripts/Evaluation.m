@@ -4,29 +4,23 @@ clear all
 %close all
 
 %Get images and sort after date modified
-originals = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Full_Quality\testA/*.png');
-fakes = dir('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_final_snrcnr/*.png');
-test = true; 
+originals = dir('..\..\CycleGAN\datasets\Full_Quality\testA/*.png');
+fakes = dir('..\..\CycleGAN\test_final_snrcnr/*.png');
+test = true;
 [originals, fakes, L] = get_data(originals, fakes, test);
 
 %%%%% Testing
-%% 
-n = 1812;
-figure
-orig = originals(n).name
-orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Full_Quality\testA/', orig);
-imshow(orig_path)
+%%
+%n = 1812;
+%figure
+%orig = originals(n).name
+%orig_path = strcat('..\..\CycleGAN\datasets\Full_Quality\testA/', orig);
+%imshow(orig_path)
 
-figure
-fake = fakes(n).name
-fakepath = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_final_snrcnr/', fake);
-imshow(fakepath)
-
-% size =256;
-% orig = get_image(fakepath);
-% hej = isnan(orig);
-% orig_outside = get_outside(orig, size, size);
-% [orig_SNR,orig_CNR] = get_SNR_CNR(orig,orig_outside,size,size);
+%figure
+%fake = fakes(n).name
+%fakepath = strcat('..\..\CycleGAN\test_final_snrcnr/', fake);
+%imshow(fakepath)
 
 %%%%%%%%%%%%%% INITIATE DATA STRUCTURES %%%%%%%%%%%%
 %%
@@ -36,7 +30,7 @@ images_per_epoch = 3000;
 % images_per_epoch = 12628;
 % images_per_epoch = 12624;
 % images_per_epoch = 4096;
-n_of_epochs = floor(L/images_per_epoch); %data sampled from X epochs 
+n_of_epochs = floor(L/images_per_epoch); %data sampled from X epochs
 
 %For BA, takes all values from one (last) epoch
 orig_SNR_vector = zeros(images_per_epoch,1);
@@ -71,13 +65,13 @@ for i = 1:L
     else
         orig_name = originals(i).name;
     end
-    orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\Full_Quality\testA/', orig_name); 
+    orig_path = strcat('..\..CycleGAN\datasets\Full_Quality\testA/', orig_name);
     orig = get_image(orig_path);
     orig_outside = get_outside(orig, size, size);
     [orig_SNR,orig_CNR] = get_SNR_CNR(orig,orig_outside,size,size);
     % Get fake
     fake_name = fakes(i).name;
-    fake_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\test_final_snrcnr/', fake_name);
+    fake_path = strcat('..\..\CycleGAN\test_final_snrcnr/', fake_name);
     fake = get_image(fake_path);
     [fake_SNR,fake_CNR] = get_SNR_CNR(fake,orig_outside,size,size);
     %%% CALCULATIONS %%%
@@ -123,7 +117,7 @@ for i = 1:L
         %STEP EPOCH
         epoch = epoch + 1;
     end
-    
+
     %If it is the last epoch, start saving for BA
 %     if i > (L-images_per_epoch+1)
 %         orig_SNR_vector(j) = orig_SNR;
@@ -138,7 +132,7 @@ end
 %%
 %maybe redo this to one single function call
 % close all;
-% 
+%
 % do_plot(SNR_vector , 11, 'SNR', 'SNR difference');
 % do_plot(ratio_SNR_vector, 22, 'SNR ratio', 'Percentage development');
 % do_plot(CNR_vector, 33, 'CNR', 'CNR difference');
@@ -189,5 +183,5 @@ ylabel('CNR ratio')
 total_epochs = 80;
 saved_every = 1;
 save('snrcnr_test', 'total_epochs', 'saved_every', 'images_per_epoch', ...
-    'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',... 
+    'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',...
     'UIQI_vector', 'orig_SNR_vector', 'fake_SNR_vector', 'orig_CNR_vector', 'fake_CNR_vector')
