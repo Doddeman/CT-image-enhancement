@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%% GET DATA %%%%%%%%%%%%
 
-clear all
+%clear all
 %close all
 
 %Get images and sort after date modified
@@ -25,18 +25,7 @@ test = true;
 %%%%%%%%%%%%%% INITIATE DATA STRUCTURES %%%%%%%%%%%%
 %%
 images_per_epoch = 3000;
-% images_per_epoch = 1817;
-% images_per_epoch = 1478;
-% images_per_epoch = 12628;
-% images_per_epoch = 12624;
-% images_per_epoch = 4096;
 n_of_epochs = floor(L/images_per_epoch); %data sampled from X epochs
-
-%For BA, takes all values from one (last) epoch
-orig_SNR_vector = zeros(images_per_epoch,1);
-fake_SNR_vector = zeros(images_per_epoch,1);
-orig_CNR_vector = zeros(images_per_epoch,1);
-fake_CNR_vector = zeros(images_per_epoch,1);
 
 SNR_vector = zeros(n_of_epochs,1);
 ratio_SNR_vector = zeros(n_of_epochs,1);
@@ -117,71 +106,17 @@ for i = 1:L
         %STEP EPOCH
         epoch = epoch + 1;
     end
-
-    %If it is the last epoch, start saving for BA
-%     if i > (L-images_per_epoch+1)
-%         orig_SNR_vector(j) = orig_SNR;
-%         fake_SNR_vector(j) = fake_SNR;
-%         orig_CNR_vector(j) = orig_CNR;
-%         fake_CNR_vector(j) = fake_CNR;
-%         j = j + 1;
-%     end
-end
+    end
 
 %%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
 %%
-%maybe redo this to one single function call
-% close all;
-%
-% do_plot(SNR_vector , 11, 'SNR', 'SNR difference');
-% do_plot(ratio_SNR_vector, 22, 'SNR ratio', 'Percentage development');
-% do_plot(CNR_vector, 33, 'CNR', 'CNR difference');
-% do_plot(ratio_CNR_vector, 44, 'CNR ratio', 'Percentage development');
-% do_plot(UIQI_vector, 77, 'UIQI', 'UIQI');
 do_plot('Average values',SNR_vector,ratio_SNR_vector,CNR_vector,ratio_CNR_vector);
-
-%%%%%%%%%%%%%% BLAND ALTMAN AND CORRELATION %%%%%%%%%%%%
-%%
-close all;
-[rpc, ~, stats] = BlandAltman(orig_SNR_vector, fake_SNR_vector, {'Orig SNR','Fake SNR'},...
-    'Correlation plot and Bland Altman', 'data', 'baYLimMode', 'Auto', 'data1Mode', 'Truth');
-[rpc, ~, stats] = BlandAltman(orig_CNR_vector, fake_CNR_vector, {'Orig CNR','Fake CNR'},...
-    'Correlation plot and Bland Altman', 'data', 'baYLimMode', 'Auto', 'data1Mode', 'Truth');
-
-diff_SNR_last_vector = fake_SNR_vector - orig_SNR_vector;
-diff_CNR_last_vector = fake_CNR_vector - orig_CNR_vector;
-ratio_SNR_last_vector = diff_SNR_last_vector ./ orig_SNR_vector;
-ratio_CNR_last_vector = diff_CNR_last_vector ./ orig_CNR_vector;
-
-figure(10)
-plot(orig_SNR_vector, diff_SNR_last_vector,'*')
-title('SNR diff vs original values')
-xlabel('Originals SNR')
-ylabel('SNR diff')
-
-figure(11)
-plot(orig_CNR_vector, diff_CNR_last_vector,'*')
-title('CNR diff vs original values')
-xlabel('Originals CNR')
-ylabel('CNR diff')
-
-figure(12)
-plot(orig_SNR_vector, ratio_SNR_last_vector,'*')
-title('SNR ratio vs original values')
-xlabel('Originals SNR')
-ylabel('SNR ratio')
-
-figure(13)
-plot(orig_CNR_vector, ratio_CNR_last_vector,'*')
-title('CNR ratio vs original values')
-xlabel('Originals CNR')
-ylabel('CNR ratio')
 
 %%%%%%% Save workspace %%%%%%
 %%
 
-total_epochs = 80;
-saved_every = 1;
-save('snrcnr_test', 'total_epochs', 'saved_every', 'images_per_epoch', ...
-    'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',...
-    'UIQI_vector', 'orig_SNR_vector', 'fake_SNR_vector', 'orig_CNR_vector', 'fake_CNR_vector')
+% total_epochs = 80;
+% saved_every = 1;
+% save('workspace_name', 'total_epochs', 'saved_every', 'images_per_epoch', ...
+%     'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',...
+%     'UIQI_vector')
