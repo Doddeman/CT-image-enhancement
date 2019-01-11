@@ -8,7 +8,7 @@ for i = 1:L
     orig_name = originals(i).name;
     orig_path = strcat(path,'test_originals/', orig_name); 
     orig_im = get_image(orig_path);
-    histed_im = histeq(orig_im);
+    histed_im = adapthisteq(orig_im);
     
 %     figure
 %     subplot(2,2,1)
@@ -20,7 +20,7 @@ for i = 1:L
 %     subplot(2,2,4)
 %     plot(imhist(histed))
     
-    dest = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\histeq\test_histeq\', orig_name);
+    dest = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\histeq\test_adapthisteq\', orig_name);
     imwrite(histed_im, dest);
 end
 
@@ -43,7 +43,7 @@ for i = 1:L
     orig_name = originals(i).name;
     orig_path = strcat(path,'test_originals/', orig_name); 
     orig_im = get_image(orig_path);
-    histeq_im = histeq(orig_im);
+    histeq_im = adapthisteq(orig_im);
 %     CGAN_name = CGANs(i).name;
 %     CGAN_path = strcat(path,'CGAN/', CGAN_name); 
 %     CGAN_im = get_image(CGAN_path);
