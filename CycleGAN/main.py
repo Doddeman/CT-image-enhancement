@@ -5,7 +5,7 @@ tf.set_random_seed(19)
 from model import cyclegan
 
 parser = argparse.ArgumentParser(description='')
-parser.add_argument('--dataset_dir', dest='dataset_dir', default='snrcnr', help='path of the dataset')
+parser.add_argument('--dataset_dir', dest='dataset_dir', default='artifacts', help='path of the dataset')
 parser.add_argument('--epoch', dest='epoch', type=int, default=80, help='# of epochs')
 #Hyperparameter
 parser.add_argument('--epoch_step', dest='epoch_step', type=int, default=100, help='# of epoch to decay lr')
@@ -36,7 +36,7 @@ parser.add_argument('--checkpoint_dir', dest='checkpoint_dir', default='./checkp
 #get that checkpoint
 parser.add_argument('--checkpoint', dest='checkpoint', type=int, default=-1, help='which checkpoint to test')
 parser.add_argument('--sample_dir', dest='sample_dir', default='./sample', help='sample are saved here')
-parser.add_argument('--test_dir', dest='test_dir', default='./snrcnr_test', help='test sample are saved here')
+parser.add_argument('--test_dir', dest='test_dir', default='./test_artifacts', help='test sample are saved here')
 #parser.add_argument('--test_dir', dest='test_dir', default='./test_128(256)', help='test sample are saved here')
 #Hyperparameter
 parser.add_argument('--L1_lambda', dest='L1_lambda', type=float, default=10.0, help='weight on L1 term in objective')

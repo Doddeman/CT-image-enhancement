@@ -4,8 +4,8 @@
 %close all
 
 %Get images and sort after date modified
-originals = dir('..\..\CycleGAN\datasets\Full_Quality\testA/*.png');
-fakes = dir('..\..\CycleGAN\test_final_snrcnr/*.png');
+originals = dir('..\..\CycleGAN\datasets\artifacts\testA/*.png');
+fakes = dir('..\..\CycleGAN\test_artifacts/*.png');
 test = true;
 [originals, fakes, L] = get_data(originals, fakes, test);
 
@@ -54,13 +54,13 @@ for i = 1:L
     else
         orig_name = originals(i).name;
     end
-    orig_path = strcat('..\..CycleGAN\datasets\Full_Quality\testA/', orig_name);
+    orig_path = strcat('C:\Users\davwa\Desktop\CT-image-enhancement\CycleGAN\datasets\artifacts\testA\', orig_name);
     orig = get_image(orig_path);
     orig_outside = get_outside(orig, size, size);
     [orig_SNR,orig_CNR] = get_SNR_CNR(orig,orig_outside,size,size);
     % Get fake
     fake_name = fakes(i).name;
-    fake_path = strcat('..\..\CycleGAN\test_final_snrcnr/', fake_name);
+    fake_path = strcat('..\..\CycleGAN\test_artifacts/', fake_name);
     fake = get_image(fake_path);
     [fake_SNR,fake_CNR] = get_SNR_CNR(fake,orig_outside,size,size);
     %%% CALCULATIONS %%%
@@ -115,8 +115,8 @@ do_plot('Average values',SNR_vector,ratio_SNR_vector,CNR_vector,ratio_CNR_vector
 %%%%%%% Save workspace %%%%%%
 %%
 
-% total_epochs = 80;
-% saved_every = 1;
-% save('workspace_name', 'total_epochs', 'saved_every', 'images_per_epoch', ...
-%     'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',...
-%     'UIQI_vector')
+total_epochs = 80;
+saved_every = 5;
+save('artifacts', 'total_epochs', 'saved_every', 'images_per_epoch', ...
+    'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',...
+    'UIQI_vector')
