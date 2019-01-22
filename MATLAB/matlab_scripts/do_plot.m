@@ -1,6 +1,8 @@
 function do_plot(super,SNR_vector, ratio_SNR_vector,CNR_vector,ratio_CNR_vector)%,histeq_SNR_diff_mean, histeq_SNR_ratio_mean,histeq_CNR_diff_mean,histeq_CNR_ratio_mean)
 %function do_plot(vec1,nr,tit,ylab,xlab)
 
+close all;
+
 x = (1:5:(length(SNR_vector)-1)*5)';
 x(length(x)+1) = 80;
 
@@ -9,59 +11,75 @@ x(length(x)+1) = 80;
 % histeq_CNR_diff_mean_vector = histeq_CNR_diff_mean .* ones(80,1);
 % histeq_CNR_ratio_mean_vector = histeq_CNR_ratio_mean .* ones(80,1);
 
-figure
-subplot(2,2,1);
-trend = fit(x,SNR_vector,'poly2');
-plot(x,SNR_vector);
-hold on
-plot(trend,x,SNR_vector)
+% figure
+% subplot(2,2,1);
+% trend = fit(x,SNR_vector,'poly2');
+% plot(x,SNR_vector);
 % hold on
-% plot(histeq_SNR_diff_mean_vector)
-title('SNR Increase');
-xlabel('Epochs')
-ylabel('Increase')
-legend('off')
+% plot(trend,x,SNR_vector)
+% % hold on
+% % plot(histeq_SNR_diff_mean_vector)
+% title('SNR Increase');
+% xlabel('Epochs')
+% ylabel('Increase')
+% legend('off')
 
-subplot(2,2,2);
+subplot(2,1,1);
 trend = fit(x,ratio_SNR_vector,'poly2');
-plot(x,ratio_SNR_vector)
-hold on
-plot(trend,x,ratio_SNR_vector)
+plot(x,ratio_SNR_vector,'white','LineWidth',3)
+set(gca, 'color', 'k')
+
+ax = gca;
+ax.XColor = 'white';
+ax.YColor = 'white';
+% hold on
+% plot(trend,x,ratio_SNR_vector)
 % hold on
 % plot(histeq_SNR_ratio_mean_vector)
 % axis([0 80 -0.3 0.2])
-title('SNR Percentage Increase');
+
+
+title('{\color{white}SNR Evolution}');
 xlabel('Epochs')
-ylabel('Percentage Increase')
+ylabel('Difference (%)')
 legend('off')
 
-subplot(2,2,3);
-trend = fit(x,CNR_vector,'poly2');
-plot(x,CNR_vector)
-hold on
-plot(trend,x,CNR_vector)
+% subplot(2,2,3);
+% trend = fit(x,CNR_vector,'poly2');
+% plot(x,CNR_vector)
 % hold on
-% plot(histeq_CNR_diff_mean_vector)
-title('CNR Increase');
-xlabel('Epochs')
-ylabel('Increase')
-legend('off')
+% plot(trend,x,CNR_vector)
+% % hold on
+% % plot(histeq_CNR_diff_mean_vector)
+% title('CNR Increase');
+% xlabel('Epochs')
+% ylabel('Increase')
+% legend('off')
 
-subplot(2,2,4);
+subplot(2,1,2);
 trend = fit(x,ratio_CNR_vector,'poly2');
-plot(x,ratio_CNR_vector)
-hold on
-plot(trend,x,ratio_CNR_vector)
+plot(x,ratio_CNR_vector,'white','LineWidth',3)
+set(gca, 'color', 'k')
+set(gcf, 'color', 'k')
+% hold on
+% plot(trend,x,ratio_CNR_vector)
 % hold on
 % plot(histeq_CNR_ratio_mean_vector)
 % axis([0 80 -0.6 0.8])
-title('CNR Percentage Increase');
+
+ax = gca;
+ax.XColor = 'white';
+ax.YColor = 'white';
+
+
+
+title('{\color{white}CNR Evolution}');
 xlabel('Epochs')
-ylabel('Percentage Increase')
+ylabel('Difference (%)')
 legend('off')
-% suptitle(super)
+suptitle('{\color{white}Average epoch values}')
 
-
+% title('{\color{white}SNR Evolution}');
 
 
 %%

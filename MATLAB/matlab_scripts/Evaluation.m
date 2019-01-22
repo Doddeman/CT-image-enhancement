@@ -106,11 +106,15 @@ for i = 1:L
         %STEP EPOCH
         epoch = epoch + 1;
     end
-    end
+end
+    
+%Percentages
+% SNR_p_vector = ratio_SNR_vector * 100;
+% CNR_p_vector = ratio_CNR_vector * 100;
 
 %%%%%%%%%%%%%% PLOT RESULTS WITH TRENDS%%%%%%%%%%%%
 %%
-do_plot('Average values',SNR_vector,ratio_SNR_vector,CNR_vector,ratio_CNR_vector);
+do_plot('Average epoch values',SNR_vector,SNR_p_vector,CNR_vector,CNR_p_vector);
 
 %%%%%%% Save workspace %%%%%%
 %%
@@ -119,4 +123,4 @@ total_epochs = 80;
 saved_every = 5;
 save('artifacts', 'total_epochs', 'saved_every', 'images_per_epoch', ...
     'SNR_vector', 'CNR_vector', 'ratio_SNR_vector', 'ratio_CNR_vector',...
-    'UIQI_vector')
+    'SNR_p_vector', 'CNR_p_vector', 'UIQI_vector')
